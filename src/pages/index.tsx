@@ -7,11 +7,11 @@ import { AppShell } from "@/components/layout/AppShell";
 import type { NavPage } from "@/components/layout/Nav";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
-import { DashboardPage } from "./dashboard";
-import { ChallengesPage } from "./challenges";
-import { LeaderboardPage } from "./leaderboard";
-import { ProfilePage } from "./profile";
-import { ShopPage } from "./shop";
+import { DashboardPage } from "@/views/dashboard";
+import { ChallengesPage } from "@/views/challenges";
+import { LeaderboardPage } from "@/views/leaderboard";
+import { ProfilePage } from "@/views/profile";
+import { ShopPage } from "@/views/shop";
 import type { Profile } from "@/lib/supabase/types";
 
 type Stage="invite"|"auth"|"app";
