@@ -2,14 +2,13 @@ import React, { useCallback } from "react";
 import { Timer } from "@/components/ui/Timer";
 import { Badge } from "@/components/ui/Badge";
 import { QUESTION_TIME_SECONDS, QUESTIONS_PER_SESSION } from "@/lib/constants";
-import { tierToDifficulty } from "@/lib/utils";
 import type { SafeQuestion } from "@/lib/supabase/types";
 import type { AnswerResult } from "@/hooks/useAttempt";
 
-interface QVProps { question:SafeQuestion; tierIndex:number; questionNum:number; selected:number|null; answered:boolean; timedOut:boolean; result:AnswerResult|null; onAnswer:(i:number)=>void; onTimeout:()=>void; onNext:()=>void; loading:boolean; }
+interface QVProps { question:SafeQuestion; questionNum:number; selected:number|null; answered:boolean; timedOut:boolean; result:AnswerResult|null; onAnswer:(i:number)=>void; onTimeout:()=>void; onNext:()=>void; loading:boolean; }
 
-export const QuestionView:React.FC<QVProps> = ({question,tierIndex,questionNum,selected,answered,timedOut,result,onAnswer,onTimeout,onNext,loading}) => {
-  const difficulty=tierToDifficulty(tierIndex);
+export const QuestionView:React.FC<QVProps> = ({question,questionNum,selected,answered,timedOut,result,onAnswer,onTimeout,onNext,loading}) => {
+  const difficulty=question.difficulty;
   const isLastQ=questionNum>=QUESTIONS_PER_SESSION;
   const handleExpire=useCallback(()=>{ if (!answered) onTimeout(); },[answered,onTimeout]);
 
@@ -23,7 +22,7 @@ export const QuestionView:React.FC<QVProps> = ({question,tierIndex,questionNum,s
         </div>
         <div style={{flex:1}}>
           {!answered
-            ? <Timer key={`${question.id}-${tierIndex}`} seconds={QUESTION_TIME_SECONDS} onExpire={handleExpire} />
+            ? <Timer key={question.id} seconds={QUESTION_TIME_SECONDS} onExpire={handleExpire} />
             : <span style={{fontSize:11,color:"#555"}}>Q{questionNum} of {QUESTIONS_PER_SESSION}</span>
           }
         </div>
@@ -62,7 +61,7 @@ export const QuestionView:React.FC<QVProps> = ({question,tierIndex,questionNum,s
 
       {answered && (
         <button onClick={onNext} style={{width:"100%",padding:"10px",background:"#E85D24",color:"#fff",border:"none",borderRadius:6,fontSize:13,fontWeight:500,cursor:"pointer"}}>
-          {isLastQ?"See results":result?.isCorrect?"Next — difficulty increases ↑":"Next question"}
+          {isLastQ?"See results":"Next question"}
         </button>
       )}
     </div>

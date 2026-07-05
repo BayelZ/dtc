@@ -24,7 +24,7 @@ export const ChallengeArena:React.FC<{challenge:Challenge;onBack:()=>void;onComp
   useEffect(()=>{ if (attempt.status==="finishing") attempt.finish(); },[attempt.status]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(()=>{ if (attempt.status==="done" && attempt.finishResult) onComplete?.(attempt.finishResult.xpEarned+attempt.finishResult.speedBonus); },[attempt.status]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const currentQ = questions[Math.min(attempt.currentTier, questions.length-1)];
+  const currentQ = questions[Math.min(attempt.questionIndex, questions.length-1)];
   const handleAnswer = useCallback(async(idx:number)=>{ if(!currentQ) return; try { setResult(await attempt.submitAnswer(currentQ,idx)); } catch { /* error in attempt.error */ } },[currentQ,attempt]);
   const handleTimeout = useCallback(async()=>{ if(!currentQ) return; try { setResult(await attempt.handleTimeout(currentQ)); } catch { /* error in attempt.error */ } },[currentQ,attempt]);
   const handleNext = useCallback(()=>{ const wasCorrect=result?.isCorrect??false; setResult(null); attempt.advance(wasCorrect); },[result,attempt]);
@@ -64,7 +64,7 @@ export const ChallengeArena:React.FC<{challenge:Challenge;onBack:()=>void;onComp
   return (
     <div style={{maxWidth:640,margin:"0 auto"}}>
       {Header}
-      <QuestionView question={currentQ} tierIndex={attempt.currentTier} questionNum={attempt.questionIndex+1} selected={attempt.selected} answered={attempt.status==="answered"} timedOut={attempt.timedOut} result={result} onAnswer={handleAnswer} onTimeout={handleTimeout} onNext={handleNext} loading={attempt.loading} />
+      <QuestionView question={currentQ} questionNum={attempt.questionIndex+1} selected={attempt.selected} answered={attempt.status==="answered"} timedOut={attempt.timedOut} result={result} onAnswer={handleAnswer} onTimeout={handleTimeout} onNext={handleNext} loading={attempt.loading} />
     </div>
   );
 };
