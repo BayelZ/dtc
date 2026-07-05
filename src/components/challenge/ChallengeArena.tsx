@@ -40,8 +40,8 @@ export const ChallengeArena:React.FC<{challenge:Challenge;onBack:()=>void;onComp
     </div>
   );
 
-  if (loadingQs||attempt.status==="idle"||attempt.status==="starting") return <div style={{maxWidth:640,margin:"0 auto"}}>{Header}<p style={{textAlign:"center",color:"#888",padding:"2rem"}}>Loading challenge…</p></div>;
   if (fetchErr||attempt.error) return <div style={{maxWidth:640,margin:"0 auto"}}>{Header}<p style={{textAlign:"center",color:"#ff7070",padding:"2rem"}}>{fetchErr??attempt.error}</p><button onClick={onBack} style={{display:"block",margin:"0 auto",background:"none",border:"none",color:"#888",cursor:"pointer",fontSize:13}}>← Go back</button></div>;
+  if (loadingQs||attempt.status==="idle"||attempt.status==="starting") return <div style={{maxWidth:640,margin:"0 auto"}}>{Header}<p style={{textAlign:"center",color:"#888",padding:"2rem"}}>Loading challenge…</p></div>;
 
   if (attempt.status==="done" && attempt.finishResult) {
     const fr = attempt.finishResult;
