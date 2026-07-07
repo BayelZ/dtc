@@ -26,6 +26,21 @@ export function computeTotalSpeedBonus(answers:Array<{is_correct:boolean;time_ta
   return answers.reduce((sum,a)=>sum+computeSpeedBonus(a.time_taken_s??QUESTION_TIME_SECONDS, challengeXP, a.is_correct),0);
 }
 
+// Splits xpReward evenly across totalQuestions, handing any remainder to the
+// earliest tier_orders so the shares always sum to exactly xpReward.
+export function questionXpShare(xpReward:number, tierOrder:number, totalQuestions:number):number {
+  if (totalQuestions<=0) return 0;
+  const base=Math.floor(xpReward/totalQuestions);
+  const remainder=xpReward%totalQuestions;
+  return base+(tierOrder<remainder ? 1 : 0);
+}
+
+// Anti-farming: XP for a newly-correct question halves with each retry of
+// the same challenge. attemptNumber is 1 for the first-ever attempt.
+export function retryDecayRate(attemptNumber:number):number {
+  return Math.pow(0.5, Math.max(0,attemptNumber-1));
+}
+
 export function scoreToGrade(score:number, total:number):Grade {
   if (total===0) return "F";
   const ratio=score/total;

@@ -2,9 +2,9 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { createApiClient, getSupabaseAdmin } from "@/lib/supabase/server";
 import { FinishAttemptSchema } from "@/lib/validations";
 import { rateLimit } from "@/lib/rateLimit";
-import { computeXP, computeTotalSpeedBonus } from "@/lib/utils";
+import { questionXpShare, retryDecayRate, computeSpeedBonus } from "@/lib/utils";
 import type { AnswerRecord } from "@/lib/supabase/types";
-import { ATTEMPT_ANSWER_RATE_MAX, ATTEMPT_RATE_WINDOW_S, QUESTIONS_PER_SESSION } from "@/lib/constants";
+import { ATTEMPT_ANSWER_RATE_MAX, ATTEMPT_RATE_WINDOW_S, QUESTIONS_PER_SESSION, QUESTION_TIME_SECONDS } from "@/lib/constants";
 
 export default async function handler(req:NextApiRequest, res:NextApiResponse) {
   if (req.method!=="POST") { res.setHeader("Allow","POST"); return res.status(405).json({error:"Method not allowed."}); }
@@ -28,8 +28,28 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
   const serverScore=answers.filter(a=>a.is_correct).length;
   const { data:challenge, error:challengeErr } = await admin.from("challenges").select("xp_reward").eq("id",attempt.challenge_id).single();
   if (challengeErr||!challenge) return res.status(500).json({error:"Failed to load challenge."});
-  const baseXP=computeXP(challenge.xp_reward,serverScore,QUESTIONS_PER_SESSION);
-  const speedBonus=computeTotalSpeedBonus(answers,challenge.xp_reward);
+
+  // Anti-farming: a question that was already answered correctly in a prior
+  // completed attempt on this challenge never re-earns XP. Newly-correct
+  // questions still earn XP, but the rate halves with each retry attempt.
+  const { data:priorAttempts } = await admin.from("attempts").select("answers")
+    .eq("user_id",user.id).eq("challenge_id",attempt.challenge_id).eq("completed",true).neq("id",attempt_id);
+  const masteredTiers=new Set<number>();
+  for (const pa of priorAttempts??[]) {
+    const priorAnswers:AnswerRecord[] = Array.isArray(pa.answers) ? pa.answers : [];
+    for (const a of priorAnswers) if (a.is_correct) masteredTiers.add(a.tier_order);
+  }
+  const attemptNumber=(priorAttempts?.length??0)+1;
+  const decayRate=retryDecayRate(attemptNumber);
+
+  let baseXP=0, speedBonus=0;
+  for (const a of answers) {
+    if (!a.is_correct || masteredTiers.has(a.tier_order)) continue;
+    const share=questionXpShare(challenge.xp_reward,a.tier_order,QUESTIONS_PER_SESSION);
+    baseXP+=Math.round(share*decayRate);
+    speedBonus+=Math.round(computeSpeedBonus(a.time_taken_s??QUESTION_TIME_SECONDS,challenge.xp_reward,true)*decayRate);
+  }
+
   const totalSeconds=answers.reduce((s,a)=>s+(a.time_taken_s??45),0);
   const { data:rpcResult, error:rpcErr } = await admin.rpc("complete_attempt", {
     p_attempt_id:attempt_id, p_xp_earned:baseXP, p_speed_bonus:speedBonus, p_time_seconds:totalSeconds,
