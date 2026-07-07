@@ -16,7 +16,7 @@ module.exports = {
           "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
           "style-src 'self' 'unsafe-inline'",
           `connect-src 'self' ${supabaseUrl} https://*.supabase.co wss://*.supabase.co`,
-          "img-src 'self' data: blob:", "font-src 'self'",
+          `img-src 'self' data: blob: ${supabaseUrl} https://*.supabase.co`, "font-src 'self'",
         ].join("; ") },
       ],
     }];
