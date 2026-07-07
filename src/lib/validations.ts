@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { INVITE_CODE_MAX_LENGTH, QUESTION_TIME_SECONDS } from "./constants";
+import { INVITE_CODE_MAX_LENGTH, QUESTION_TIME_SECONDS, AVATAR_MAX_BYTES } from "./constants";
 
 const email = z.string().trim().toLowerCase().email("Enter a valid email address");
 const password = z.string().min(8,"Password must be at least 8 characters").max(72);
@@ -25,3 +25,8 @@ export const SubmitAnswerSchema = z.object({
   time_taken_s: z.number().int().min(1).max(QUESTION_TIME_SECONDS).optional().default(QUESTION_TIME_SECONDS),
 });
 export const FinishAttemptSchema = z.object({ attempt_id: uuid });
+// Base64 grows input by ~4/3 — cap the encoded string a bit above the raw byte limit
+// so oversized payloads are rejected before the (more expensive) decode step.
+export const AvatarUploadSchema = z.object({
+  image: z.string().min(1).max(Math.ceil(AVATAR_MAX_BYTES*1.4)),
+});

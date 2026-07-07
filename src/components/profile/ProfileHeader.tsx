@@ -1,8 +1,8 @@
 import React, { useState, useCallback, useRef } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { getInitials, tierColors } from "@/lib/utils";
-import { BETA_REGION } from "@/lib/constants";
-import { resizeImageToSquareWebp } from "@/lib/imageResize";
+import { BETA_REGION, ROUTES } from "@/lib/constants";
+import { resizeImageToSquareWebp, blobToBase64 } from "@/lib/imageResize";
 import { getSupabase } from "@/lib/supabase/client";
 import type { Profile } from "@/lib/supabase/types";
 
@@ -52,17 +52,24 @@ export const ProfileHeader:React.FC<ProfileHeaderProps> = ({profile,rank,onSaveB
     setUploadingAvatar(true);
     try {
       const blob=await resizeImageToSquareWebp(file);
-      const path=`${profile.id}.webp`;
-      const { error:uploadErr } = await getSupabase().storage.from("avatars").upload(path, blob, { upsert:true, contentType:"image/webp" });
-      if (uploadErr) throw uploadErr;
-      const { data } = getSupabase().storage.from("avatars").getPublicUrl(path);
-      await onAvatarUploaded(`${data.publicUrl}?t=${Date.now()}`);
+      const image=await blobToBase64(blob);
+      const { data:{session} } = await getSupabase().auth.getSession();
+      if (!session?.access_token) throw new Error("Not authenticated.");
+      const res=await fetch(ROUTES.api.profileAvatar,{
+        method:"POST",
+        headers:{ "Authorization":`Bearer ${session.access_token}`, "Content-Type":"application/json" },
+        body:JSON.stringify({image}),
+        credentials:"include",
+      });
+      const body=await res.json();
+      if (!res.ok) throw new Error(body?.error??"Failed to upload image.");
+      await onAvatarUploaded(body.avatar_url);
     } catch(err) {
       setAvatarError(err instanceof Error ? err.message : "Failed to upload image.");
     } finally {
       setUploadingAvatar(false);
     }
-  },[profile.id,onAvatarUploaded]);
+  },[onAvatarUploaded]);
 
   const subline=`${profile.shop_name||"Independent"} · ${profile.specialty} specialist · ${BETA_REGION}${rank!=null?` · Rank #${rank}`:""}`;
 

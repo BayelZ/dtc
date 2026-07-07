@@ -22,6 +22,9 @@ export const INVITE_RATE_LIMIT_WINDOW_S = 60;
 export const ATTEMPT_CREATE_RATE_MAX = 20;
 export const ATTEMPT_ANSWER_RATE_MAX = 60;
 export const ATTEMPT_RATE_WINDOW_S = 60;
+export const AVATAR_UPLOAD_RATE_MAX = 10;
+export const AVATAR_UPLOAD_RATE_WINDOW_S = 60;
+export const AVATAR_MAX_BYTES = 2 * 1024 * 1024;
 
 export const SPECIALTIES = ["Automotive","Diesel","Both"] as const;
 export const ROLES = ["mechanic","student","shop_owner"] as const;
@@ -41,5 +44,6 @@ export const ROUTES = {
     attemptCreate:"/api/attempt/create",
     attemptAnswer:"/api/attempt/answer",
     attemptFinish:"/api/attempt/finish",
+    profileAvatar:"/api/profile/avatar",
   },
 } as const;

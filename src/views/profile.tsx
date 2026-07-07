@@ -31,11 +31,8 @@ export const ProfilePage:React.FC<{userId:string|null|undefined}> = ({userId}) =
     if (!error) mutate({bio});
   },[profile?.id,mutate]);
 
-  const handleAvatarUploaded=useCallback(async(avatar_url:string)=>{
-    if (!profile?.id) return;
-    const { error } = await getSupabase().from("profiles").update({avatar_url}).eq("id",profile.id);
-    if (!error) mutate({avatar_url});
-  },[profile?.id,mutate]);
+  // The API route already persists avatar_url server-side (via admin client) — just sync local state.
+  const handleAvatarUploaded=useCallback((avatar_url:string)=>{ mutate({avatar_url}); },[mutate]);
 
   if (!profile?.id) return <p style={{textAlign:"center",color:"#888",padding:"3rem 0"}}>Loading profile…</p>;
 
