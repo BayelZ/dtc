@@ -16,7 +16,7 @@ export function useProficiency(userId:string|null|undefined) {
     const sb=getSupabase();
     const [{data:skillScores},{data:attempts}] = await Promise.all([
       sb.from("skill_scores").select("*").eq("user_id",userId),
-      sb.from("attempts").select("score,total_questions,time_seconds,grade").eq("user_id",userId).eq("completed",true),
+      sb.from("attempt_summaries").select("score,total_questions,time_seconds,grade").eq("user_id",userId).eq("completed",true),
     ]);
 
     const domainScore=(domain:string):number=>{

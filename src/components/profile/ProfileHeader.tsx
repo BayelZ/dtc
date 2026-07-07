@@ -16,11 +16,12 @@ const PLACEHOLDER_COLOR = "#E85D24";
 interface ProfileHeaderProps {
   profile:Profile;
   rank:number|null;
+  isOwnProfile:boolean;
   onSaveBio:(bio:string)=>Promise<void>|void;
   onAvatarUploaded:(url:string)=>Promise<void>|void;
 }
 
-export const ProfileHeader:React.FC<ProfileHeaderProps> = ({profile,rank,onSaveBio,onAvatarUploaded}) => {
+export const ProfileHeader:React.FC<ProfileHeaderProps> = ({profile,rank,isOwnProfile,onSaveBio,onAvatarUploaded}) => {
   const [editingBio,setEditingBio]=useState(false);
   const [draftBio,setDraftBio]=useState(profile.bio??"");
   const [saving,setSaving]=useState(false);
@@ -39,7 +40,7 @@ export const ProfileHeader:React.FC<ProfileHeaderProps> = ({profile,rank,onSaveB
     finally { setSaving(false); }
   },[draftBio,onSaveBio]);
 
-  const openFilePicker=useCallback(()=>{ if (!uploadingAvatar) fileInputRef.current?.click(); },[uploadingAvatar]);
+  const openFilePicker=useCallback(()=>{ if (isOwnProfile&&!uploadingAvatar) fileInputRef.current?.click(); },[isOwnProfile,uploadingAvatar]);
 
   const handleFileSelect=useCallback(async(e:React.ChangeEvent<HTMLInputElement>)=>{
     const file=e.target.files?.[0];
@@ -81,9 +82,9 @@ export const ProfileHeader:React.FC<ProfileHeaderProps> = ({profile,rank,onSaveB
       <div style={{position:"relative",display:"flex",gap:24,alignItems:"flex-start",flexWrap:"wrap"}}>
         <div style={{position:"relative",width:96,height:96,flexShrink:0}}>
           <div style={{position:"absolute",inset:0,borderRadius:"50%",animation:"avatarPulse 1.8s ease-in-out infinite"}} />
-          <input ref={fileInputRef} type="file" accept={AVATAR_ACCEPT} onChange={handleFileSelect} style={{display:"none"}} />
-          <div onClick={openFilePicker} title="Click to change photo"
-            style={{width:96,height:96,borderRadius:"50%",background:profile.avatar_url?"#000":PLACEHOLDER_BG,border:`3px solid ${tc.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:33,fontWeight:600,color:PLACEHOLDER_COLOR,cursor:uploadingAvatar?"wait":"pointer",overflow:"hidden",opacity:uploadingAvatar?0.5:1}}>
+          {isOwnProfile && <input ref={fileInputRef} type="file" accept={AVATAR_ACCEPT} onChange={handleFileSelect} style={{display:"none"}} />}
+          <div onClick={openFilePicker} title={isOwnProfile?"Click to change photo":undefined}
+            style={{width:96,height:96,borderRadius:"50%",background:profile.avatar_url?"#000":PLACEHOLDER_BG,border:`3px solid ${tc.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:33,fontWeight:600,color:PLACEHOLDER_COLOR,cursor:isOwnProfile?(uploadingAvatar?"wait":"pointer"):"default",overflow:"hidden",opacity:uploadingAvatar?0.5:1}}>
             {profile.avatar_url
               ? <img src={profile.avatar_url} alt={profile.full_name} style={{width:"100%",height:"100%",objectFit:"cover"}} />
               : initials}
@@ -91,9 +92,11 @@ export const ProfileHeader:React.FC<ProfileHeaderProps> = ({profile,rank,onSaveB
           <div style={{position:"absolute",bottom:-2,right:-2,width:32,height:32,borderRadius:"50%",background:tc.bg,border:"2px solid #0f0f0f",display:"flex",alignItems:"center",justifyContent:"center"}}>
             <Icon icon="shield" size={16} color={tc.color} strokeWidth={2.2} />
           </div>
-          <div onClick={openFilePicker} title="Change photo" style={{position:"absolute",top:-4,right:-4,width:26,height:26,borderRadius:"50%",background:PRIMARY,display:"flex",alignItems:"center",justifyContent:"center",border:"2px solid #0f0f0f",cursor:uploadingAvatar?"wait":"pointer"}}>
-            <Icon icon="camera" size={13} color="#fff" strokeWidth={2.2} />
-          </div>
+          {isOwnProfile && (
+            <div onClick={openFilePicker} title="Change photo" style={{position:"absolute",top:-4,right:-4,width:26,height:26,borderRadius:"50%",background:PRIMARY,display:"flex",alignItems:"center",justifyContent:"center",border:"2px solid #0f0f0f",cursor:uploadingAvatar?"wait":"pointer"}}>
+              <Icon icon="camera" size={13} color="#fff" strokeWidth={2.2} />
+            </div>
+          )}
         </div>
 
         <div style={{flex:1,minWidth:260}}>
@@ -103,12 +106,14 @@ export const ProfileHeader:React.FC<ProfileHeaderProps> = ({profile,rank,onSaveB
               <Icon icon="shield" size={14} color={tc.color} strokeWidth={2.2} /> {profile.tier}
             </span>
           </div>
-          {(uploadingAvatar||avatarError) && (
+          {isOwnProfile && (uploadingAvatar||avatarError) && (
             <p style={{fontSize:12,color:avatarError?"#ff7070":"#888",margin:"0 0 6px"}}>{avatarError??"Uploading photo…"}</p>
           )}
           <p style={{fontSize:14,color:"#999",margin:"6px 0 12px",lineHeight:1.5}}>{subline}</p>
 
-          {editingBio ? (
+          {!isOwnProfile ? (
+            profile.bio && <p style={{fontSize:15,color:"#f0f0f0",lineHeight:1.7,margin:"0 0 12px"}}>{profile.bio}</p>
+          ) : editingBio ? (
             <div style={{marginBottom:12}}>
               <textarea value={draftBio} onChange={e=>setDraftBio(e.target.value.slice(0,BIO_MAX))} maxLength={BIO_MAX} rows={2}
                 style={{width:"100%",background:"#242424",border:"0.5px solid #3e3e3e",borderRadius:6,color:"#f0f0f0",fontSize:15,padding:"10px 12px",outline:"none",resize:"vertical",fontFamily:"inherit",boxSizing:"border-box"}} />

@@ -10,7 +10,9 @@ import { useBadges } from "@/hooks/useBadges";
 import { getSupabase } from "@/lib/supabase/client";
 import { xpToNextTier, tierColors } from "@/lib/utils";
 
-export const ProfilePage:React.FC<{userId:string|null|undefined}> = ({userId}) => {
+interface ProfilePageProps { userId:string|null|undefined; isOwnProfile:boolean; onBack?:()=>void; }
+
+export const ProfilePage:React.FC<ProfilePageProps> = ({userId,isOwnProfile,onBack}) => {
   const { profile, mutate } = useProfile(userId);
   const { stats, loading:statsLoading } = useProficiency(profile?.id);
   const { badges, loading:badgesLoading } = useBadges(profile?.id);
@@ -43,7 +45,10 @@ export const ProfilePage:React.FC<{userId:string|null|undefined}> = ({userId}) =
 
   return (
     <div style={{maxWidth:900,margin:"0 auto"}}>
-      <ProfileHeader profile={profile} rank={rank} onSaveBio={handleSaveBio} onAvatarUploaded={handleAvatarUploaded} />
+      {onBack && (
+        <button onClick={onBack} style={{background:"none",border:"none",fontSize:13,color:"#888",cursor:"pointer",padding:"0 0 12px"}}>← Back to leaderboard</button>
+      )}
+      <ProfileHeader profile={profile} rank={rank} isOwnProfile={isOwnProfile} onSaveBio={handleSaveBio} onAvatarUploaded={handleAvatarUploaded} />
       <ProfileStats profile={profile} rank={rank} earnedCount={earnedCount} totalBadges={badges.length} />
 
       <div style={{background:"#1a1a1a",border:"0.5px solid #2e2e2e",borderRadius:10,padding:"16px 18px",marginBottom:18}}>

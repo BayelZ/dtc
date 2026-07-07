@@ -23,6 +23,8 @@ export interface ChallengeDomain { challenge_id:string; domain:SkillDomain; }
 
 export interface AnswerRecord { question_id:string; tier_order:number; selected:number; correct:number; is_correct:boolean; time_taken_s?:number; }
 export type SafeQuestion = Omit<Question,"correct_index">;
+// Mirrors attempts minus `answers` (which embeds correct_index) — safe to read cross-user.
+export type AttemptSummary = Omit<Attempt,"answers">;
 
 export interface LeaderboardRow {
   id:string; full_name:string; shop_name:string; specialty:string; xp:number; streak:number; tier:string;
@@ -65,7 +67,10 @@ export interface Database {
       skill_scores: { Row:Flatten<SkillScore>; Insert:Omit<SkillScore,"id"|"updated_at">; Update:Partial<SkillScore>; Relationships:[] };
       challenge_domains: { Row:Flatten<ChallengeDomain>; Insert:Flatten<ChallengeDomain>; Update:Partial<ChallengeDomain>; Relationships:[] };
     };
-    Views: { leaderboard: { Row:Flatten<LeaderboardRow>; Relationships:[] } };
+    Views: {
+      leaderboard: { Row:Flatten<LeaderboardRow>; Relationships:[] };
+      attempt_summaries: { Row:Flatten<AttemptSummary>; Relationships:[] };
+    };
     Functions: {
       complete_attempt: { Args:{p_attempt_id:string;p_xp_earned:number;p_speed_bonus?:number;p_time_seconds?:number}; Returns:CompleteAttemptResult };
       xp_to_tier: { Args:{p_xp:number}; Returns:Tier };

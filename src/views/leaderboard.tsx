@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/Card";
 import { TierBadge } from "@/components/grading/TierBadge";
 import type { LeaderboardRow, Profile, Tier } from "@/lib/supabase/types";
 
-export const LeaderboardPage:React.FC<{profile:Partial<Profile>|null}> = ({profile}) => {
+export const LeaderboardPage:React.FC<{profile:Partial<Profile>|null;onViewProfile:(id:string)=>void}> = ({profile,onViewProfile}) => {
   const [rows,setRows]=useState<LeaderboardRow[]>([]);
   const [loading,setLd]=useState(true);
   const [filter,setFilter]=useState("All");
@@ -29,7 +29,8 @@ export const LeaderboardPage:React.FC<{profile:Partial<Profile>|null}> = ({profi
         {displayed.map(u=>{
           const isMe=u.id===profile?.id;
           return (
-            <div key={u.id} style={{display:"grid",gridTemplateColumns:"36px 1fr 70px 100px 70px 60px",gap:8,borderBottom:"0.5px solid #2e2e2e",background:isMe?"#2a1a12":"transparent",margin:isMe?"0 -1.25rem":undefined,padding:isMe?"10px 1.25rem":"10px 0",alignItems:"center"}}>
+            <div key={u.id} onClick={()=>onViewProfile(u.id)} role="button" tabIndex={0} onKeyDown={e=>e.key==="Enter"&&onViewProfile(u.id)}
+              style={{display:"grid",gridTemplateColumns:"36px 1fr 70px 100px 70px 60px",gap:8,borderBottom:"0.5px solid #2e2e2e",background:isMe?"#2a1a12":"transparent",margin:isMe?"0 -1.25rem":undefined,padding:isMe?"10px 1.25rem":"10px 0",alignItems:"center",cursor:"pointer"}}>
               <span style={{fontSize:13,fontWeight:500,color:u.rank<=3?"#E85D24":"#888"}}>#{u.rank}</span>
               <div style={{minWidth:0}}>
                 <p style={{fontSize:13,fontWeight:500,margin:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{u.full_name}{isMe&&<span style={{fontSize:9,background:"#2a1a12",color:"#ff7a45",border:"0.5px solid #5a2e12",padding:"1px 5px",borderRadius:3,marginLeft:6}}>you</span>}</p>
