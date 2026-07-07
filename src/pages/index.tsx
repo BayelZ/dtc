@@ -39,7 +39,7 @@ const Home:NextPage = () => {
       {currentPage==="Dashboard" && <DashboardPage profile={profile} onNavigate={setPage} />}
       {currentPage==="Challenges" && <ChallengesPage profile={profile} onXP={xp=>mutate({xp:(profile?.xp??0)+xp})} />}
       {currentPage==="Leaderboard" && <LeaderboardPage profile={profile} />}
-      {currentPage==="Profile" && <ProfilePage profile={profile} />}
+      {currentPage==="Profile" && <ProfilePage userId={user?.id} />}
       {currentPage==="Shop Portal" && <ShopPage />}
     </AppShell>
   );

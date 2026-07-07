@@ -12,7 +12,7 @@ export type Tier = "Bronze"|"Silver"|"Gold"|"Platinum"|"Master";
 export type SkillDomain = "Electrical"|"Fuel"|"Emissions"|"Drivetrain"|"Network";
 
 export interface InviteCode { id:string; code:string; used_count:number; max_uses:number; is_active:boolean; created_at:string; }
-export interface Profile { id:string; full_name:string; role:UserRole; specialty:Specialty; shop_name:string; city:string; xp:number; streak:number; tier:Tier; last_active:string|null; invite_code:string; created_at:string; }
+export interface Profile { id:string; full_name:string; role:UserRole; specialty:Specialty; shop_name:string; city:string; bio:string; avatar_url:string|null; xp:number; streak:number; tier:Tier; last_active:string|null; invite_code:string; created_at:string; }
 export interface Challenge { id:string; slug:string; title:string; type:ChallengeType; specialty:Specialty; xp_reward:number; description:string; tags:string[]; is_published:boolean; created_at:string; }
 export interface Question { id:string; challenge_id:string; difficulty:Difficulty; tier_order:number; question_text:string; options:string[]; correct_index:number; explanation:string; created_at:string; }
 export interface Attempt { id:string; user_id:string; challenge_id:string; score:number; total_questions:number; xp_earned:number; speed_bonus_xp:number; time_seconds:number; grade:Grade|null; answers:AnswerRecord[]; completed:boolean; created_at:string; }
@@ -56,7 +56,7 @@ export interface Database {
   public: {
     Tables: {
       invite_codes: { Row:Flatten<InviteCode>; Insert:Omit<InviteCode,"id"|"created_at">; Update:Partial<InviteCode>; Relationships:[] };
-      profiles: { Row:Flatten<Profile>; Insert:Omit<Profile,"created_at">; Update:Partial<Profile>; Relationships:[] };
+      profiles: { Row:Flatten<Profile>; Insert:Omit<Profile,"created_at"|"bio"|"avatar_url"> & {bio?:string;avatar_url?:string|null}; Update:Partial<Profile>; Relationships:[] };
       challenges: { Row:Flatten<Challenge>; Insert:Omit<Challenge,"id"|"created_at">; Update:Partial<Challenge>; Relationships:[] };
       questions: { Row:Flatten<Question>; Insert:Omit<Question,"id"|"created_at">; Update:Partial<Question>; Relationships:[] };
       attempts: { Row:Flatten<Attempt>; Insert:Omit<Attempt,"id"|"created_at"|"grade"> & {grade?:Grade|null}; Update:Partial<Attempt>; Relationships:[] };

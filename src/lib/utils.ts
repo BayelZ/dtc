@@ -77,6 +77,10 @@ export function getInitials(name:string):string {
 }
 export function formatXP(xp:number):string { return xp>=1000 ? `${(xp/1000).toFixed(1)}k` : String(xp); }
 export function calcAccuracy(correct:number, total:number):number { return total===0?0:Math.round((correct/total)*100); }
+export function computeSpeedScore(avgTimeTakenS:number):number {
+  if (avgTimeTakenS<=0) return 0;
+  return Math.max(0,Math.min(100,Math.round(100*(1-avgTimeTakenS/QUESTION_TIME_SECONDS))));
+}
 export function safeJsonParse<T=unknown>(value:unknown):T|null {
   if (typeof value!=="string") return (value as T)??null;
   try { return JSON.parse(value) as T; } catch { return null; }
