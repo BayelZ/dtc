@@ -58,7 +58,7 @@ export function useAttempt() {
       const body=await res.json();
       if (!res.ok) throw new Error(body?.error??"Failed to submit answer.");
       if (body.is_correct) setCorrect(c=>c+1);
-      setAnswers(prev=>[...prev,{ question_id:question.id, tier_order:question.tier_order, selected:sel, correct:body.correct_index, is_correct:body.is_correct, time_taken_s:timeTaken }]);
+      setAnswers(prev=>[...prev,{ question_id:question.id, tier_order:question.tier_order, selected:sel, correct:body.correct_index, is_correct:body.is_correct, time_taken_s:timeTaken, difficulty:question.difficulty }]);
       setStatus("answered");
       return { isCorrect:body.is_correct, explanation:body.explanation, correctIndex:body.correct_index };
     } catch(e) { setError(e instanceof Error?e.message:"Unknown error."); setStatus("active"); throw e; }

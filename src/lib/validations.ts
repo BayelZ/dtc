@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { INVITE_CODE_MAX_LENGTH, QUESTION_TIME_SECONDS, AVATAR_MAX_BYTES } from "./constants";
+import { INVITE_CODE_MAX_LENGTH, QUESTION_TIME_SECONDS, AVATAR_MAX_BYTES, QUESTIONS_PER_SESSION } from "./constants";
 
 const email = z.string().trim().toLowerCase().email("Enter a valid email address");
 const password = z.string().min(8,"Password must be at least 8 characters").max(72);
@@ -20,7 +20,7 @@ export const LoginSchema = z.object({ email, password: z.string().min(1,"Passwor
 export const CreateAttemptSchema = z.object({ challenge_id: uuid });
 export const SubmitAnswerSchema = z.object({
   attempt_id: uuid, question_id: uuid,
-  tier_order: z.number().int().min(0).max(2),
+  tier_order: z.number().int().min(0).max(QUESTIONS_PER_SESSION-1),
   selected: z.number().int().min(-1).max(3),
   time_taken_s: z.number().int().min(1).max(QUESTION_TIME_SECONDS).optional().default(QUESTION_TIME_SECONDS),
 });

@@ -21,7 +21,7 @@ export interface UserBadge { user_id:string; badge_id:string; earned_at:string; 
 export interface SkillScore { id:string; user_id:string; domain:SkillDomain; xp:number; attempts:number; correct:number; updated_at:string; }
 export interface ChallengeDomain { challenge_id:string; domain:SkillDomain; }
 
-export interface AnswerRecord { question_id:string; tier_order:number; selected:number; correct:number; is_correct:boolean; time_taken_s?:number; }
+export interface AnswerRecord { question_id:string; tier_order:number; selected:number; correct:number; is_correct:boolean; time_taken_s?:number; difficulty?:Difficulty; }
 export type SafeQuestion = Omit<Question,"correct_index">;
 // Mirrors attempts minus `answers` (which embeds correct_index) — safe to read cross-user.
 export type AttemptSummary = Omit<Attempt,"answers">;

@@ -72,7 +72,7 @@ export const ResultScreen:React.FC<ResultScreenProps> = ({correctCount,totalQues
           {answers.map((a,i)=>(
             <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 0",borderBottom:"0.5px solid #2e2e2e"}}>
               <span style={{fontSize:12,color:a.is_correct?"#6fcf6f":"#ff7070",minWidth:14}}>{a.is_correct?"✓":"✗"}</span>
-              <span style={{fontSize:12,color:"#888"}}>Q{i+1} — {["Easy","Medium","Hard"][a.tier_order]??"—"}</span>
+              <span style={{fontSize:12,color:"#888"}}>Q{i+1} — {a.difficulty??"—"}</span>
               {a.time_taken_s!=null && a.is_correct && a.time_taken_s<=10 && <span style={{fontSize:10,color:"#e6b84a",marginLeft:4}}>⚡ fast</span>}
               {a.selected===-1 && <span style={{fontSize:11,color:"#ff7070",marginLeft:"auto"}}>Time expired</span>}
               {a.time_taken_s!=null && a.selected!==-1 && <span style={{fontSize:11,color:"#555",marginLeft:"auto"}}>{a.time_taken_s}s</span>}

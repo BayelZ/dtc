@@ -5,6 +5,7 @@ import { useAttempt } from "@/hooks/useAttempt";
 import { useChallenges } from "@/hooks/useChallenges";
 import type { Challenge, SafeQuestion } from "@/lib/supabase/types";
 import type { AnswerResult } from "@/hooks/useAttempt";
+import { QUESTIONS_PER_SESSION } from "@/lib/constants";
 
 export const ChallengeArena:React.FC<{challenge:Challenge;onBack:()=>void;onComplete?:(xp:number)=>void}> = ({challenge,onBack,onComplete}) => {
   const { fetchQuestions } = useChallenges();
@@ -49,7 +50,7 @@ export const ChallengeArena:React.FC<{challenge:Challenge;onBack:()=>void;onComp
       <div style={{maxWidth:640,margin:"0 auto"}}>
         {Header}
         <ResultScreen
-          correctCount={attempt.correctCount} totalQuestions={3}
+          correctCount={attempt.correctCount} totalQuestions={QUESTIONS_PER_SESSION}
           xpEarned={fr.xpEarned} speedBonus={fr.speedBonus} grade={fr.grade}
           tier={fr.tier} tierUp={fr.tierUp} newTotalXP={fr.newTotalXP}
           answers={attempt.answers} onRetry={handleRetry} onBack={onBack}
