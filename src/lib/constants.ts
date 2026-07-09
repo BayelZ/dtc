@@ -1,7 +1,7 @@
 export const APP_NAME = "DTC — Diag Tech Challenge";
 export const BETA_REGION = "Houston, TX";
 export const QUESTION_TIME_SECONDS = 45;
-export const QUESTIONS_PER_SESSION = 3;
+export const QUESTIONS_PER_SESSION = 10;
 export const DAILY_XP_MULTIPLIER = 2;
 export const INVITE_CODE_MAX_LENGTH = 20;
 
