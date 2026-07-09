@@ -22,22 +22,23 @@ export const LeaderboardPage:React.FC<{profile:Partial<Profile>|null;onViewProfi
         ))}
       </div>
       <Card>
-        <div style={{display:"grid",gridTemplateColumns:"36px 1fr 70px 100px 70px 60px",gap:8,padding:"0 0 8px",borderBottom:"0.5px solid #2e2e2e",marginBottom:4}}>
-          {["#","Mechanic","Tier","Specialty","XP","Acc."].map(h=><span key={h} style={{fontSize:11,color:"#888",fontWeight:500}}>{h}</span>)}
+        <div className="lb-row" style={{gap:8,padding:"0 0 8px",borderBottom:"0.5px solid #2e2e2e",marginBottom:4}}>
+          {["#","Mechanic","Tier","Specialty","XP","Acc."].map(h=><span key={h} className={h==="Tier"||h==="Specialty"?"lb-col-hide-mobile":undefined} style={{fontSize:11,color:"#888",fontWeight:500}}>{h}</span>)}
         </div>
         {loading && <p style={{color:"#888",padding:"1rem 0"}}>Loading…</p>}
         {displayed.map(u=>{
           const isMe=u.id===profile?.id;
           return (
             <div key={u.id} onClick={()=>onViewProfile(u.id)} role="button" tabIndex={0} onKeyDown={e=>e.key==="Enter"&&onViewProfile(u.id)}
-              style={{display:"grid",gridTemplateColumns:"36px 1fr 70px 100px 70px 60px",gap:8,borderBottom:"0.5px solid #2e2e2e",background:isMe?"#2a1a12":"transparent",margin:isMe?"0 -1.25rem":undefined,padding:isMe?"10px 1.25rem":"10px 0",alignItems:"center",cursor:"pointer"}}>
+              className="lb-row" style={{gap:8,borderBottom:"0.5px solid #2e2e2e",background:isMe?"#2a1a12":"transparent",margin:isMe?"0 -1.25rem":undefined,padding:isMe?"10px 1.25rem":"10px 0",alignItems:"center",cursor:"pointer"}}>
               <span style={{fontSize:13,fontWeight:500,color:u.rank<=3?"#E85D24":"#888"}}>#{u.rank}</span>
               <div style={{minWidth:0}}>
                 <p style={{fontSize:13,fontWeight:500,margin:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{u.full_name}{isMe&&<span style={{fontSize:9,background:"#2a1a12",color:"#ff7a45",border:"0.5px solid #5a2e12",padding:"1px 5px",borderRadius:3,marginLeft:6}}>you</span>}</p>
-                <p style={{fontSize:11,color:"#888",margin:0}}>{u.shop_name||"—"}</p>
+                <p style={{fontSize:11,color:"#888",margin:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{u.shop_name||"—"}</p>
+                <div className="lb-mobile-specialty" style={{marginTop:4}}><Badge label={u.specialty} variant="specialty" /></div>
               </div>
-              <TierBadge tier={u.tier as Tier} size="sm" />
-              <Badge label={u.specialty} variant="specialty" />
+              <span className="lb-col-hide-mobile"><TierBadge tier={u.tier as Tier} size="sm" /></span>
+              <span className="lb-col-hide-mobile"><Badge label={u.specialty} variant="specialty" /></span>
               <span style={{fontSize:13,fontWeight:500}}>{u.xp.toLocaleString()}</span>
               <span style={{fontSize:13,color:u.accuracy_pct>=80?"#6fcf6f":u.accuracy_pct>=60?"#e6b84a":"#888"}}>{u.accuracy_pct}%</span>
             </div>

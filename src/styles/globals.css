@@ -25,3 +25,20 @@ a { color: inherit; text-decoration: none; }
 @keyframes barGrow { from{width:0%} }
 @keyframes ringFade { from{opacity:0} to{opacity:1} }
 @keyframes fadeInUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+.nav-hamburger { display: none; }
+.nav-mobile-menu { display: none; }
+@media (max-width: 768px) {
+  .nav-items { display: none; }
+  .nav-hamburger { display: flex; }
+  .nav-mobile-menu { display: flex; }
+  .nav-beta-badge { display: none; }
+}
+
+.lb-row { display: grid; grid-template-columns: 36px 1fr 70px 100px 70px 60px; }
+.lb-mobile-specialty { display: none; }
+@media (max-width: 640px) {
+  .lb-row { grid-template-columns: 28px 1fr 56px 44px; }
+  .lb-col-hide-mobile { display: none; }
+  .lb-mobile-specialty { display: block; }
+}

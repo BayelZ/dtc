@@ -21,9 +21,9 @@ export const DashboardPage:React.FC<{profile:Partial<Profile>|null;onNavigate:(p
 
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,minmax(0,1fr))",gap:12,marginBottom:"1.5rem"}}>
         {[{label:"Total XP",value:formatXP(xp),sub:"Lifetime"},{label:"Streak",value:`${streak}d`,sub:"Current"},{label:"Specialty",value:spec,sub:"Primary focus"},{label:"Region",value:"Houston",sub:"Beta area"}].map(s=>(
-          <div key={s.label} style={{background:"#1a1a1a",border:"0.5px solid #2e2e2e",borderRadius:8,padding:"1rem"}}>
+          <div key={s.label} style={{background:"#1a1a1a",border:"0.5px solid #2e2e2e",borderRadius:8,padding:"1rem",minWidth:0}}>
             <p style={{fontSize:12,color:"#888",margin:"0 0 4px"}}>{s.label}</p>
-            <p style={{fontSize:22,fontWeight:500,margin:"0 0 2px"}}>{s.value}</p>
+            <p style={{fontSize:22,fontWeight:500,margin:"0 0 2px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.value}</p>
             <p style={{fontSize:11,color:"#555",margin:0}}>{s.sub}</p>
           </div>
         ))}
