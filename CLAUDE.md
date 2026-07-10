@@ -30,10 +30,14 @@ Next.js 14 Pages Router · Supabase (Postgres + RLS + @supabase/ssr) · TypeScri
   correct vs. incorrect before shipping, not after. This exact chain of bugs happened once
   already (migrations 017/018): first the position bias, then a shared filler-phrase bank used to
   fix it that was 137/137 wrong-answer-only, then residual reused phrasing from hand-rewrites.
-- KNOWN ISSUE (as of migration 018): correct-answer-is-longest is still ~61% (67/110 questions) —
-  reduced from the original 96% but not fully eliminated. Revisit with a dedicated pass focused
-  only on closing remaining length gaps with unique, non-repeating wording (no shared phrase bank
-  of any kind, and check reuse of the author's own phrasing habits, not just a canned list).
+- Distractors must be plausible same-system competing hypotheses — never "do nothing / ignore it /
+  replace X without testing" throwaways or cross-system absurdities (e.g. alternator options on a
+  transmission question), and never a stem or challenge title that contains its own answer.
+  Migration 019 rewrote the whole bank to this standard; hold new content to it.
+- RESOLVED (migrations 019/020): correct-answer-is-longest is down to ~33% (46/140), and no
+  question has a correct option more than 6 characters longer than its longest distractor — no
+  longer a usable tell. When authoring, keep the per-question length gap under ~6 chars rather
+  than chasing the aggregate percentage.
 
 ## Commands
 npm install && npm run type-check && npm test && npm run dev
