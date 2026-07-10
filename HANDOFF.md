@@ -10,10 +10,10 @@ the validation gates that prevent them). This file is a snapshot; delete or rewr
   (migration 021 + this handoff). Live Supabase project: `nanikmhrhrjfekmtsvdi.supabase.co`.
 - **Migrations 019 and 020 have been RUN against the live DB and verified** (140 questions,
   positions 36/35/34/35, max length gap 6 chars, no phrase tells).
-- **Migrations `021_shop_lore_challenges.sql` and `022_five_more_challenges.sql` are NEW this
-  session — check whether they have been run.** If not: paste each into the Supabase SQL Editor
-  (each fits in a single paste). There is still no CLI/direct DB access; every migration is run
-  by the user via copy/paste.
+- Migrations 021 and 022 have been RUN and verified live (220 questions at that point).
+- **Migration `023_interaction_fault_challenges.sql` is NEW — check whether it has been run.**
+  If not: paste it into the Supabase SQL Editor (fits in a single paste). There is still no
+  CLI/direct DB access; every migration is run by the user via copy/paste.
 - Local dev: `.env.local` has real credentials for the live project. Dev server via
   `mcp__Claude_Preview__preview_start` with name `"dtc-dev"`.
 
@@ -33,11 +33,21 @@ the validation gates that prevent them). This file is a snapshot; delete or rewr
 - **Migration 022** added five more, filling the thin domains: P0087 GDI two-stage fuel (Fuel),
   P20EE SCR efficiency (Emissions/Diesel), a LIN-bus door-boot chafe — deliberately different
   physics from the two CAN challenges (Network), bearing-vs-diff-whine NVH discrimination
-  (Drivetrain), and a P0299 boost leak that defeats static testing (Fuel). After 021+022:
-  **22 challenges, 220 questions**.
-- All old tells are resolved: positions even (~57/55/53/55), correct-is-longest ~34% with no
+  (Drivetrain), and a P0299 boost leak that defeats static testing (Fuel).
+- **Migration 023** added five misdiagnosis/interaction-fault cases: a trailer ground fault
+  corrupting CAN (Network), single-tire AWD binding quoted as a coupler (Drivetrain), an EVAP
+  small leak that survived three gas caps (Emissions), smart-charge/BMS strategy misread as two
+  failed alternators (Electrical), and CCV carryover quoted as a turbo (Emissions/Diesel).
+  After 023: **27 challenges, 270 questions**.
+- All old tells are resolved: positions even (~70/67/66/67), correct-is-longest ~34% with no
   per-question gap >6 chars, zero wrong-only/correct-only repeated 3-grams, zero throwaway
   patterns. These checks must be re-run on ANY new batch (see below).
+- User-added option rules (2026-07-10, from disputed questions — follow these): when a
+  distractor is a near-miss, the stem must contain the explicit tiebreaker; unusual techniques
+  in correct answers get named in recognizable terms (freeze spray, provocation testing) with
+  the explanation saying why the common alternative loses under the stem's stated conditions;
+  and where the common technique (swap-to-known-good) genuinely wins — cheap part, instant
+  readout — let it be the correct answer sometimes so it isn't a reverse tell.
 
 ## Content authoring pipeline (reuse this — it works)
 
