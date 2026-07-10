@@ -10,9 +10,10 @@ the validation gates that prevent them). This file is a snapshot; delete or rewr
   (migration 021 + this handoff). Live Supabase project: `nanikmhrhrjfekmtsvdi.supabase.co`.
 - **Migrations 019 and 020 have been RUN against the live DB and verified** (140 questions,
   positions 36/35/34/35, max length gap 6 chars, no phrase tells).
-- **Migration `021_shop_lore_challenges.sql` is NEW this session — check whether it has been run
-  yet.** If not: paste it into the Supabase SQL Editor (single paste is fine at its size). There
-  is still no CLI/direct DB access; every migration is run by the user via copy/paste.
+- **Migrations `021_shop_lore_challenges.sql` and `022_five_more_challenges.sql` are NEW this
+  session — check whether they have been run.** If not: paste each into the Supabase SQL Editor
+  (each fits in a single paste). There is still no CLI/direct DB access; every migration is run
+  by the user via copy/paste.
 - Local dev: `.env.local` has real credentials for the live project. Dev server via
   `mcp__Claude_Preview__preview_start` with name `"dtc-dev"`.
 
@@ -28,8 +29,13 @@ the validation gates that prevent them). This file is a snapshot; delete or rewr
   case framing (user asked for "sneaky and entertaining"): the classic vanilla-ice-cream hot-soak
   no-start (Fuel), a "haunted minivan" event-driven wake fault that defeats normal draw testing
   (Electrical), and a $3,800 transmission overhaul quote whose root cause is a corroded ground
-  putting the TCM in failsafe (Drivetrain, `ro` type). After 021: **17 challenges, 170 questions**.
-- All old tells are resolved: positions even (~44/42/42/42), correct-is-longest ~33% with no
+  putting the TCM in failsafe (Drivetrain, `ro` type).
+- **Migration 022** added five more, filling the thin domains: P0087 GDI two-stage fuel (Fuel),
+  P20EE SCR efficiency (Emissions/Diesel), a LIN-bus door-boot chafe — deliberately different
+  physics from the two CAN challenges (Network), bearing-vs-diff-whine NVH discrimination
+  (Drivetrain), and a P0299 boost leak that defeats static testing (Fuel). After 021+022:
+  **22 challenges, 220 questions**.
+- All old tells are resolved: positions even (~57/55/53/55), correct-is-longest ~34% with no
   per-question gap >6 chars, zero wrong-only/correct-only repeated 3-grams, zero throwaway
   patterns. These checks must be re-run on ANY new batch (see below).
 
