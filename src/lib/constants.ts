@@ -4,6 +4,9 @@ export const QUESTION_TIME_SECONDS = 45;
 export const QUESTIONS_PER_SESSION = 10;
 export const DAILY_XP_MULTIPLIER = 2;
 export const INVITE_CODE_MAX_LENGTH = 20;
+// Open-beta signups skip the invite gate; this tag is stored as their invite_code
+// so the beta cohort stays identifiable (founder badge, analytics) after launch.
+export const OPEN_BETA_INVITE_TAG = "HOUSTON-BETA";
 
 // Speed bonus: full bonus at ≤10s, decays linearly to 0 at QUESTION_TIME_SECONDS
 export const SPEED_BONUS_MAX_PCT = 0.5;
