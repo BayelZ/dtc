@@ -10,10 +10,20 @@ the validation gates that prevent them). This file is a snapshot; delete or rewr
   (migration 021 + this handoff). Live Supabase project: `nanikmhrhrjfekmtsvdi.supabase.co`.
 - **Migrations 019 and 020 have been RUN against the live DB and verified** (140 questions,
   positions 36/35/34/35, max length gap 6 chars, no phrase tells).
-- Migrations 021 and 022 have been RUN and verified live (220 questions at that point).
-- **Migration `023_interaction_fault_challenges.sql` is NEW — check whether it has been run.**
-  If not: paste it into the Supabase SQL Editor (fits in a single paste). There is still no
-  CLI/direct DB access; every migration is run by the user via copy/paste.
+- Migrations 021-024 have all been RUN and verified live: **30 challenges, 300 questions**
+  (positions 78/75/73/74, correct-is-longest 103/300 with max 6-char gap, zero phrase tells).
+  There is still no CLI/direct DB access; every migration is run by the user via copy/paste.
+- **Incident (2026-07-16, resolved):** running the legacy `all_migrations.sql` (concatenated
+  through 018) alongside 024 re-applied 017/018 and silently reverted options/correct_index on
+  the original 110 questions while keeping 019's stems — one live question was incoherent.
+  Detected by the routine post-migration verification (phrase-tell flood + length-gap spike);
+  fixed by re-running 019. The file is deleted from the repo (`37c8a0e`). Lesson: ALWAYS re-run
+  the full verification after any DB change, and never keep concatenated migration files in
+  `supabase/migrations/`.
+- Migration 024 was the first batch through the pre-publish review gate (author → validate →
+  review artifact → user findings → Rev 2 → migration). The user's review caught two
+  ship-blocking platform errors (see memory: tow ratings, 6.7-vs-LML fuel architecture).
+  Keep this workflow for all future content.
 - Local dev: `.env.local` has real credentials for the live project. Dev server via
   `mcp__Claude_Preview__preview_start` with name `"dtc-dev"`.
 
