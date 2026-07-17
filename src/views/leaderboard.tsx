@@ -33,7 +33,12 @@ export const LeaderboardPage:React.FC<{profile:Partial<Profile>|null;onViewProfi
               className="lb-row" style={{gap:8,borderBottom:"0.5px solid #2e2e2e",background:isMe?"#2a1a12":"transparent",margin:isMe?"0 -1.25rem":undefined,padding:isMe?"10px 1.25rem":"10px 0",alignItems:"center",cursor:"pointer"}}>
               <span style={{fontSize:13,fontWeight:500,color:u.rank<=3?"#E85D24":"#888"}}>#{u.rank}</span>
               <div style={{minWidth:0}}>
-                <p style={{fontSize:13,fontWeight:500,margin:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{u.full_name}{isMe&&<span style={{fontSize:9,background:"#2a1a12",color:"#ff7a45",border:"0.5px solid #5a2e12",padding:"1px 5px",borderRadius:3,marginLeft:6}}>you</span>}</p>
+                <p style={{fontSize:13,fontWeight:500,margin:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
+                  {u.full_name}
+                  {/* NO COMEBACKS stamp — deliberately the only blue element on the board */}
+                  {u.no_comebacks&&<span title="Pile empty — no open comebacks" style={{fontSize:8,background:"#0C2740",color:"#E9EEF2",border:"1.5px solid #E9EEF2",padding:"1px 6px 2px",borderRadius:3,marginLeft:6,letterSpacing:".14em",fontWeight:800,verticalAlign:"1px"}}>NO COMEBACKS</span>}
+                  {isMe&&<span style={{fontSize:9,background:"#2a1a12",color:"#ff7a45",border:"0.5px solid #5a2e12",padding:"1px 5px",borderRadius:3,marginLeft:6}}>you</span>}
+                </p>
                 <p style={{fontSize:11,color:"#888",margin:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{u.shop_name||"—"}</p>
                 <div className="lb-mobile-specialty" style={{marginTop:4}}><Badge label={u.specialty} variant="specialty" /></div>
               </div>

@@ -4,13 +4,15 @@ import { Badge } from "@/components/ui/Badge";
 import { TierBadge } from "@/components/grading/TierBadge";
 import { TierProgress } from "@/components/grading/TierProgress";
 import { useChallenges } from "@/hooks/useChallenges";
+import { usePileStats } from "@/hooks/useComebacks";
 import { formatXP } from "@/lib/utils";
 import { CHALLENGE_TYPE_ICONS } from "@/lib/constants";
 import type { Profile } from "@/lib/supabase/types";
 import type { NavPage } from "@/components/layout/Nav";
 
-export const DashboardPage:React.FC<{profile:Partial<Profile>|null;onNavigate:(p:NavPage)=>void}> = ({profile,onNavigate}) => {
+export const DashboardPage:React.FC<{profile:Partial<Profile>|null;onNavigate:(p:NavPage)=>void;onOpenBench:()=>void}> = ({profile,onNavigate,onOpenBench}) => {
   const { challenges, loading } = useChallenges();
+  const pile = usePileStats(profile?.id);
   const name=profile?.full_name??"Tech", xp=profile?.xp??0, streak=profile?.streak??0, spec=profile?.specialty??"Automotive", tier=profile?.tier??"Bronze";
   return (
     <div>
@@ -36,6 +38,27 @@ export const DashboardPage:React.FC<{profile:Partial<Profile>|null;onNavigate:(p
         </div>
         <TierProgress xp={xp} />
       </Card>
+
+      {/* Comeback Pile — deliberately the only blue element in the black shop */}
+      <div role="button" tabIndex={0} onClick={onOpenBench} onKeyDown={e=>e.key==="Enter"&&onOpenBench()}
+        style={{background:"#0C2740",border:pile.open>0?"1px dashed rgba(233,238,242,0.55)":"1px solid #1E4568",
+          borderRadius:8,padding:"1rem",marginBottom:16,cursor:"pointer",outline:"none",
+          display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,flexWrap:"wrap"}}>
+        <div>
+          <p style={{fontSize:11,letterSpacing:".16em",textTransform:"uppercase",color:"#8FB0C4",margin:"0 0 4px",
+            fontFamily:"ui-monospace,SFMono-Regular,Menlo,Consolas,monospace"}}>Comeback pile</p>
+          <p style={{fontSize:20,fontWeight:700,margin:0,color:"#E9EEF2"}}>
+            {pile.loading?"…":pile.open>0?`${pile.open} waiting`:"Bench clear"}
+          </p>
+          <p style={{fontSize:11,margin:"4px 0 0",color:pile.open>0?"#C9705A":"#8FB0C4"}}>
+            {pile.open>0?"Jobs came back — no clock, no XP":"No comebacks. The way it should be."}
+          </p>
+        </div>
+        <span style={{background:"#E9EEF2",color:"#0C2740",borderRadius:5,padding:"9px 14px",fontSize:12,fontWeight:800,
+          letterSpacing:".06em",textTransform:"uppercase"}}>
+          {pile.open>0?"Make it right":"Visit the bench"}
+        </span>
+      </div>
 
       <Card>
         <p style={{fontSize:13,fontWeight:500,margin:"0 0 12px"}}>All challenges {loading && <span style={{fontSize:11,color:"#555"}}>loading…</span>}</p>

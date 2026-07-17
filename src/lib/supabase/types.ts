@@ -26,10 +26,28 @@ export type SafeQuestion = Omit<Question,"correct_index">;
 // Mirrors attempts minus `answers` (which embeds correct_index) — safe to read cross-user.
 export type AttemptSummary = Omit<Attempt,"answers">;
 
+export interface Comeback {
+  user_id:string; question_id:string; missed_count:number; cleared_count:number;
+  first_missed_at:string; last_missed_at:string; cleared_at:string|null;
+}
+// Mirrors comebacks minus question_id — which questions a user misses stays private.
+export interface ComebackSummary { user_id:string; cleared_count:number; open:boolean; }
+// Explanation is withheld until the answer lands, same as the arena flow.
+export interface ComebackQueueItem {
+  question: Omit<SafeQuestion,"explanation"> & { challenge_title:string };
+  missed_count:number; last_missed_at:string;
+}
+export interface ComebackAnswerResult {
+  is_correct:boolean; correct_index:number; explanation:string;
+  open_remaining:number; cleared_total:number;
+}
+
 export interface LeaderboardRow {
   id:string; full_name:string; shop_name:string; specialty:string; xp:number; streak:number; tier:string;
   badge_count:number; grade_a_count:number; grade_b_count:number; grade_c_count:number; grade_f_count:number;
-  challenges_completed:number; accuracy_pct:number; rank:number; specialty_rank:number;
+  challenges_completed:number; accuracy_pct:number;
+  comebacks_open:number; comebacks_cleared:number; no_comebacks:boolean;
+  rank:number; specialty_rank:number;
 }
 
 export interface CompleteAttemptResult { grade:Grade; tier:Tier; tier_up:boolean; xp_earned:number; new_xp:number; }
@@ -66,13 +84,17 @@ export interface Database {
       user_badges: { Row:Flatten<UserBadge>; Insert:Flatten<UserBadge>; Update:Partial<UserBadge>; Relationships:[] };
       skill_scores: { Row:Flatten<SkillScore>; Insert:Omit<SkillScore,"id"|"updated_at">; Update:Partial<SkillScore>; Relationships:[] };
       challenge_domains: { Row:Flatten<ChallengeDomain>; Insert:Flatten<ChallengeDomain>; Update:Partial<ChallengeDomain>; Relationships:[] };
+      comebacks: { Row:Flatten<Comeback>; Insert:Omit<Comeback,"first_missed_at"|"last_missed_at"|"cleared_at"|"cleared_count"> & Partial<Pick<Comeback,"first_missed_at"|"last_missed_at"|"cleared_at"|"cleared_count">>; Update:Partial<Comeback>; Relationships:[] };
     };
     Views: {
       leaderboard: { Row:Flatten<LeaderboardRow>; Relationships:[] };
       attempt_summaries: { Row:Flatten<AttemptSummary>; Relationships:[] };
+      comeback_summaries: { Row:Flatten<ComebackSummary>; Relationships:[] };
     };
     Functions: {
       complete_attempt: { Args:{p_attempt_id:string;p_xp_earned:number;p_speed_bonus?:number;p_time_seconds?:number}; Returns:CompleteAttemptResult };
+      record_comeback_answer: { Args:{p_user_id:string;p_question_id:string;p_selected:number}; Returns:ComebackAnswerResult };
+      award_comeback_badges: { Args:{p_user_id:string}; Returns:undefined };
       xp_to_tier: { Args:{p_xp:number}; Returns:Tier };
       score_to_grade: { Args:{p_score:number;p_total:number}; Returns:Grade };
     };

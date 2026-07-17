@@ -7,6 +7,7 @@ import type { NavPage } from "@/components/layout/Nav";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { DashboardPage } from "@/views/dashboard";
+import { ReworkBench } from "@/views/bench";
 import { ChallengesPage } from "@/views/challenges";
 import { LeaderboardPage } from "@/views/leaderboard";
 import { ProfilePage } from "@/views/profile";
@@ -20,6 +21,9 @@ const Home:NextPage = () => {
   const { user, loading:authLoading, signOut } = useAuth();
   const [stage,setStage]=useState<Stage>("auth");
   const [currentPage,setCurrentPage]=useState<NavPage>("Dashboard");
+  // benchEpoch remounts the dashboard on exit so pile stats refresh
+  const [benchOpen,setBenchOpen]=useState(false);
+  const [benchEpoch,setBenchEpoch]=useState(0);
   const [viewingUserId,setViewingUserId]=useState<string|null>(null);
   const [localProfile,setLocalProfile]=useState<Partial<Profile>|null>(null);
   const { profile:dbProfile, mutate } = useProfile(user?.id);
@@ -39,7 +43,8 @@ const Home:NextPage = () => {
 
   return (
     <AppShell currentPage={currentPage} profile={profile} onNavigate={handleNavigate} onLogout={handleLogout}>
-      {currentPage==="Dashboard" && <DashboardPage profile={profile} onNavigate={handleNavigate} />}
+      {benchOpen && <ReworkBench onExit={()=>{ setBenchOpen(false); setBenchEpoch(e=>e+1); }} />}
+      {currentPage==="Dashboard" && <DashboardPage key={benchEpoch} profile={profile} onNavigate={handleNavigate} onOpenBench={()=>setBenchOpen(true)} />}
       {currentPage==="Challenges" && <ChallengesPage profile={profile} onXP={xp=>mutate({xp:(profile?.xp??0)+xp})} />}
       {currentPage==="Leaderboard" && <LeaderboardPage profile={profile} onViewProfile={handleViewProfile} />}
       {currentPage==="Profile" && <ProfilePage userId={viewedUserId} isOwnProfile={isOwnProfile} onBack={!isOwnProfile ? ()=>handleNavigate("Leaderboard") : undefined} />}

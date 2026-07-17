@@ -25,6 +25,10 @@ export const SubmitAnswerSchema = z.object({
   time_taken_s: z.number().int().min(1).max(QUESTION_TIME_SECONDS).optional().default(QUESTION_TIME_SECONDS),
 });
 export const FinishAttemptSchema = z.object({ attempt_id: uuid });
+export const ComebackAnswerSchema = z.object({
+  question_id: uuid,
+  selected: z.number().int().min(-1).max(3),
+});
 // Base64 grows input by ~4/3 — cap the encoded string a bit above the raw byte limit
 // so oversized payloads are rejected before the (more expensive) decode step.
 export const AvatarUploadSchema = z.object({

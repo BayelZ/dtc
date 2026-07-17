@@ -12,6 +12,11 @@ export const OPEN_BETA_INVITE_TAG = "HOUSTON-BETA";
 export const SPEED_BONUS_MAX_PCT = 0.5;
 export const SPEED_BONUS_FULL_THRESHOLD_S = 10;
 
+// Comeback Pile ("Rework Bench"): zero XP by design. The stamp threshold MUST
+// mirror the >=50 in the leaderboard view's no_comebacks column (migration 025).
+export const COMEBACK_STAMP_MIN_QUESTIONS = 50;
+export const COMEBACK_QUEUE_SIZE = 10;
+
 // Tier XP thresholds — MUST mirror xp_to_tier() in SQL
 export const TIER_XP: Record<string, number> = {
   Bronze: 0, Silver: 1000, Gold: 2500, Platinum: 5000, Master: 10000,
@@ -47,6 +52,8 @@ export const ROUTES = {
     attemptCreate:"/api/attempt/create",
     attemptAnswer:"/api/attempt/answer",
     attemptFinish:"/api/attempt/finish",
+    comebackQueue:"/api/comeback/queue",
+    comebackAnswer:"/api/comeback/answer",
     profileAvatar:"/api/profile/avatar",
   },
 } as const;
