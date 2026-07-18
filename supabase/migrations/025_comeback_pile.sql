@@ -255,12 +255,14 @@ SELECT
   COUNT(DISTINCT a.id) FILTER (WHERE a.completed)::INTEGER AS challenges_completed,
   CASE WHEN SUM(a.total_questions) FILTER (WHERE a.completed)>0
     THEN ROUND(SUM(a.score) FILTER (WHERE a.completed)::NUMERIC/SUM(a.total_questions) FILTER (WHERE a.completed)*100)::INTEGER ELSE 0 END AS accuracy_pct,
+  RANK() OVER (ORDER BY p.xp DESC)::INTEGER AS rank,
+  RANK() OVER (PARTITION BY p.specialty ORDER BY p.xp DESC)::INTEGER AS specialty_rank,
+  -- New columns must be APPENDED — CREATE OR REPLACE VIEW cannot reorder or
+  -- rename existing columns (42P16 otherwise).
   (SELECT COUNT(*) FROM public.comeback_summaries cs WHERE cs.user_id=p.id AND cs.open)::INTEGER AS comebacks_open,
   (SELECT COALESCE(SUM(cs.cleared_count),0) FROM public.comeback_summaries cs WHERE cs.user_id=p.id)::INTEGER AS comebacks_cleared,
   ((SELECT COUNT(*) FROM public.comeback_summaries cs WHERE cs.user_id=p.id AND cs.open)=0
-    AND COALESCE(SUM(a.total_questions) FILTER (WHERE a.completed),0)>=50) AS no_comebacks,
-  RANK() OVER (ORDER BY p.xp DESC)::INTEGER AS rank,
-  RANK() OVER (PARTITION BY p.specialty ORDER BY p.xp DESC)::INTEGER AS specialty_rank
+    AND COALESCE(SUM(a.total_questions) FILTER (WHERE a.completed),0)>=50) AS no_comebacks
 FROM public.profiles p
 LEFT JOIN public.user_badges ub ON ub.user_id=p.id
 LEFT JOIN public.attempt_summaries a ON a.user_id=p.id
