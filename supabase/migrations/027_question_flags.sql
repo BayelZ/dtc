@@ -7,9 +7,11 @@
 -- 1. Admin gate. No enum surgery: a plain boolean on profiles.
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS is_admin BOOLEAN NOT NULL DEFAULT false;
 
+-- Both are Bayel's accounts (note the typo'd gmai.com domain on the second —
+-- the canonical bayelzhumabekov@gmail.com was never registered).
 UPDATE public.profiles p SET is_admin = true
 FROM auth.users u
-WHERE p.id = u.id AND u.email = 'bayelzhumabekov@gmail.com';
+WHERE p.id = u.id AND u.email IN ('bayelzhuma@gmail.com','bayelzhumabekov@gmai.com');
 
 -- 2. Flags table.
 CREATE TABLE IF NOT EXISTS public.question_flags (
