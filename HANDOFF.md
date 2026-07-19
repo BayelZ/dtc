@@ -1,99 +1,112 @@
-# DTC Session Handoff — 2026-07-10
+# DTC Session Handoff — 2026-07-18
 
-Read this first, then `CLAUDE.md` for stack/conventions and the Question Content Quality rules
-(they encode two real bug chains — position/length/phrase tells, then throwaway distractors — and
-the validation gates that prevent them). This file is a snapshot; delete or rewrite it when stale.
+Read this first, then `CLAUDE.md` (conventions, critical rules, Question Content Quality gates)
+and the auto-memory (`feedback_quiz_content_validation` has six hard-won authoring rules).
+Snapshot doc — delete or rewrite when stale.
 
-## Current state
+## ⚠ OPEN ISSUE — start here
 
-- Latest commits: `d7ece69` (migrations 019/020 + CLAUDE.md) plus this session's follow-up commit
-  (migration 021 + this handoff). Live Supabase project: `nanikmhrhrjfekmtsvdi.supabase.co`.
-- **Migrations 019 and 020 have been RUN against the live DB and verified** (140 questions,
-  positions 36/35/34/35, max length gap 6 chars, no phrase tells).
-- Migrations 021-024 have all been RUN and verified live: **30 challenges, 300 questions**
-  (positions 78/75/73/74, correct-is-longest 103/300 with max 6-char gap, zero phrase tells).
-  There is still no CLI/direct DB access; every migration is run by the user via copy/paste.
-- **Incident (2026-07-16, resolved):** running the legacy `all_migrations.sql` (concatenated
-  through 018) alongside 024 re-applied 017/018 and silently reverted options/correct_index on
-  the original 110 questions while keeping 019's stems — one live question was incoherent.
-  Detected by the routine post-migration verification (phrase-tell flood + length-gap spike);
-  fixed by re-running 019. The file is deleted from the repo (`37c8a0e`). Lesson: ALWAYS re-run
-  the full verification after any DB change, and never keep concatenated migration files in
-  `supabase/migrations/`.
-- Migration 024 was the first batch through the pre-publish review gate (author → validate →
-  review artifact → user findings → Rev 2 → migration). The user's review caught two
-  ship-blocking platform errors (see memory: tow ratings, 6.7-vs-LML fuel architecture).
-  Keep this workflow for all future content.
-- Local dev: `.env.local` has real credentials for the live project. Dev server via
-  `mcp__Claude_Preview__preview_start` with name `"dtc-dev"`.
+The session ended with the user reporting **"no it did not work"** right after two things:
+(1) the NO COMEBACKS stamp test, and (2) being asked to run migration `026_founding_tech_badge.sql`.
+It is **unknown which one failed** — first move is to ask the user what exactly they saw.
+Diagnostic tree, in the order I'd check:
 
-## Content state (the main work of the last two sessions)
+1. **Ask what "didn't work" means** — no stamp visible on the leaderboard? 026 threw an error?
+   Founding Tech badge missing? Leaderboard page broken entirely?
+2. **Suspect #1 — leaderboard.tsx client select string.** `src/views/profile.tsx` selects
+   `comebacks_cleared,no_comebacks` explicitly; I never confirmed `src/views/leaderboard.tsx`'s
+   select string includes the three new columns (`comebacks_open,comebacks_cleared,no_comebacks`).
+   If its select is an explicit column list without them, `u.no_comebacks` is undefined and the
+   chip never renders. One-line fix.
+3. **Suspect #2 — grants on `comeback_summaries` (serious).** ALL of this session's live
+   verification used the **service role**, which bypasses RLS and masks permission problems.
+   The `leaderboard` view is `security_invoker`; its scalar subqueries read
+   `public.comeback_summaries` (a definer view mirroring the `attempt_summaries` pattern).
+   If the project's default privileges did NOT grant authenticated SELECT on the new view,
+   every real user's leaderboard query now fails with permission denied — i.e. migration 025
+   may have **broken the leaderboard page for actual users** while looking perfect via service
+   role. Test with an ANON/authenticated token, not service role. Fix if so:
+   `GRANT SELECT ON public.comeback_summaries TO authenticated, anon;` (new migration).
+4. **Confirm 026 state**: does `badges` have 'Founding Tech'? Do all ~10 profiles have it in
+   `user_badges`? Is `handle_new_user()` the 026 version (contains the award block)? If the user
+   never ran 026 or it errored, that alone explains a missing founder badge.
+5. **Vercel deploy**: the comeback feature code is in commits `356b24d`/`b43548e` — confirm the
+   deployed build is current before chasing code bugs.
 
-- **Migration 019** rewrote distractors on 106 of 110 questions to a professional standard:
-  every wrong answer is a plausible same-system competing hypothesis; no "do nothing / ignore it /
-  replace X without testing" throwaways, no cross-system absurdities, and the two stems that
-  leaked their own answer (P242F tier 0, TCC tier 0) were rewritten.
-- **Migration 020** added: Parasitic Draw (Electrical), P0420 Catalyst Efficiency (Emissions),
-  U0101 No-Comm TCM (Network).
-- **Migration 021** added three narrative "shop lore" challenges with deliberately misleading
-  case framing (user asked for "sneaky and entertaining"): the classic vanilla-ice-cream hot-soak
-  no-start (Fuel), a "haunted minivan" event-driven wake fault that defeats normal draw testing
-  (Electrical), and a $3,800 transmission overhaul quote whose root cause is a corroded ground
-  putting the TCM in failsafe (Drivetrain, `ro` type).
-- **Migration 022** added five more, filling the thin domains: P0087 GDI two-stage fuel (Fuel),
-  P20EE SCR efficiency (Emissions/Diesel), a LIN-bus door-boot chafe — deliberately different
-  physics from the two CAN challenges (Network), bearing-vs-diff-whine NVH discrimination
-  (Drivetrain), and a P0299 boost leak that defeats static testing (Fuel).
-- **Migration 023** added five misdiagnosis/interaction-fault cases: a trailer ground fault
-  corrupting CAN (Network), single-tire AWD binding quoted as a coupler (Drivetrain), an EVAP
-  small leak that survived three gas caps (Emissions), smart-charge/BMS strategy misread as two
-  failed alternators (Electrical), and CCV carryover quoted as a turbo (Emissions/Diesel).
-  After 023: **27 challenges, 270 questions**.
-- All old tells are resolved: positions even (~70/67/66/67), correct-is-longest ~34% with no
-  per-question gap >6 chars, zero wrong-only/correct-only repeated 3-grams, zero throwaway
-  patterns. These checks must be re-run on ANY new batch (see below).
-- User-added option rules (2026-07-10, from disputed questions — follow these): when a
-  distractor is a near-miss, the stem must contain the explicit tiebreaker; unusual techniques
-  in correct answers get named in recognizable terms (freeze spray, provocation testing) with
-  the explanation saying why the common alternative loses under the stem's stated conditions;
-  and where the common technique (swap-to-known-good) genuinely wins — cheap part, instant
-  readout — let it be the correct answer sometimes so it isn't a reverse tell.
+Verified-good facts to build on (all via service role, 2026-07-18): `qwdsqw`
+(id `056b8f8a-...`) has `no_comebacks=true`, `comebacks_cleared=7`, badge 'Made Right', streak
+credit applied — the RPC path works. Note: I cleared that test account's pile permanently via
+`record_comeback_answer` as the test.
 
-## Content authoring pipeline (reuse this — it works)
+## Current live state
 
-Scratchpad pattern from this session (`build_019/020/021.py` lived in the session scratchpad and
-is gone with it; recreate from this description):
+- **DB (Supabase `nanikmhrhrjfekmtsvdi`)**: migrations through **025 RUN and verified**.
+  026 (Founding Tech) is committed at `a2029cc` — **run status unknown** (see open issue).
+  No CLI/DB access from here: user pastes migrations into the SQL Editor manually.
+- **Content**: 30 challenges / 300 questions, all quality gates green (positions ~78/75/73/74,
+  correct-is-longest 103/300 with max 6-char gap, zero phrase/throwaway tells).
+- **App**: open signup live (invite gate removed; signups tagged `invite_code='HOUSTON-BETA'`
+  via `OPEN_BETA_INVITE_TAG`). InviteGate + `/api/invite/validate` remain in-tree, unrouted.
+- **Comeback Pile ("Rework Bench") shipped**: migration 025 (comebacks table + RLS +
+  `comeback_summaries` + backfill (61 rows/8 users) + `record_comeback_answer()` +
+  `award_comeback_badges()` + extended `complete_attempt()` + leaderboard columns),
+  `api/comeback/{queue,answer}.ts`, `src/views/bench.tsx` (blueprint-blue mode),
+  dashboard card, profile counter, NO COMEBACKS chip in leaderboard.tsx.
+  Mechanics: zero XP (deliberate — see below), streak credit on clears, misses to back of line,
+  clears happen anywhere (bench or replay), stamp = pile empty + ≥50 questions lifetime
+  (mirrored constant `COMEBACK_STAMP_MIN_QUESTIONS`).
+- **Marketing**: ad copy (`marketing/houston-beta-ads.md`), final Standings ad renders
+  (`marketing/ad-assets/`, PNG+JPG, 1:1/4:5/9:16 — domain on them is a PLACEHOLDER
+  `diagtechchallenge.com`, and the board handles are fictional; re-render before spending).
+  Field copy locked: headline "LeetCode for mechanics", primary "27 real cases technicians argue
+  about at lunch — scored, timed, ranked, no parts cannon. Free while in beta." (bank is 300 now —
+  update the number in copy). Ad artifacts: Standings production page + Rework Bench direction
+  page + batch-024 review page (claude.ai artifacts, session-scoped links in chat history).
 
-1. Pull the live bank with the service-role key (read from `.env.local` via `source`, never
-   printed): `curl .../rest/v1/questions?select=*` with `apikey` + `Authorization: Bearer` headers.
-2. Author question edits/new questions as JSON files (options array + 0-based `correct_index`,
-   correct text placed at its assigned index).
-3. One build script per migration that: applies/validates the JSON, runs ALL gates — position
-   `Counter` + max same-position run per challenge, correct-is-longest count + per-question gap
-   (>6 chars fails), wrong-only and correct-only 3-gram frequency (≥4 occurrences fails), a
-   throwaway-pattern regex over wrong options — then emits the SQL (UPDATE-by-qid for edits,
-   INSERT...SELECT-by-slug for new challenges, `ON CONFLICT DO NOTHING`).
-4. Expect the first authoring pass to fail the length gate (correct answers come out verbose) —
-   fix by lengthening a distractor past the correct answer, NOT by padding with reusable phrases,
-   and leave ~⅓ of questions with the correct answer longest-by-a-hair so there's no inverse tell.
-5. After the user runs the migration, re-pull the live bank and re-run the gates against it.
+## Design decisions that must survive (agreed with user, don't relitigate)
 
-New challenges also need: a row in `challenges` (types: dtc/wiring/component/ro; specialty
-Automotive or Diesel), one `challenge_domains` row (Electrical/Fuel/Emissions/Drivetrain/Network),
-and exactly 10 questions, tier_order 0-9, each with an explanation. XP range in use: 90-160.
+- **XP is a finite pool** (never re-earn correct; retry decay). Comebacks pay ZERO XP forever —
+  any payout creates sandbagging (deliberately missing to bank inventory). Rewards are: streak
+  credit, lifetime cleared counter, Made Right / Clean Bench badges, and the revocable stamp.
+- **Tier thresholds stay as-is for beta**; Master is intentionally unreachable until the catalog
+  grows (~5,460 XP obtainable max today). Calibrate from beta data, not guesses.
+- **Review gate for ALL new content**: author → validate (position/length/phrase/throwaway
+  gates) → review artifact → user findings → Rev 2 → migration. The user's reviews have caught
+  ship-blocking errors twice (tow ratings, 6.7-vs-LML fuel architecture — now memory rule #6).
+- **Visual system**: black + amber `#E2932F` for the competitive app/ads (instrument-panel,
+  Archivo Black + IBM Plex Mono direction); blueprint blue `#0C2740` + soapstone `#E9EEF2` +
+  primer oxide `#B0523B` exclusively for the Rework Bench. Amber and blue never share a screen
+  except the dashboard's pile card. No barker copy — evidence, deadpan, never address the viewer.
 
-## Gotchas carried forward
+## Gotchas (each cost real time this session)
 
-- Supabase SQL Editor: very large pastes (~100+ statements) can throw bogus parse errors — split
-  into 2-3 chunks. Its "destructive operation / missing RLS" warnings are usually false positives
-  here, but glance at the SQL before dismissing.
-- Any dynamic `DROP CONSTRAINT` by pattern-matching a column name is dangerous (matched a UNIQUE
-  constraint once, migration 015/016 incident) — query `pg_constraint` by `contype`.
-- `preview_eval` can read the live session cookie (`sb-<ref>-auth-token`, base64, sometimes split
-  `.0`/`.1` parts) for authenticated REST calls; simpler when appropriate: `source .env.local` in
-  Bash and curl with the service-role key (never print it).
-- Don't give every challenge the same closing question pair (documentation + "generalized
-  sequence") — that template was itself a tell; vary the later tiers per challenge.
+- `CREATE OR REPLACE VIEW` can only APPEND columns at the end — inserting before existing ones
+  throws 42P16 (hit this on the leaderboard view; comment now in 025).
+- **Service-role verification masks RLS/grant failures** — always ALSO test new views/tables
+  with an authenticated-role token (this is likely tonight's bug, see open issue).
+- Never keep concatenated migration files in `supabase/migrations/` — `all_migrations.sql`
+  (ended at 018) got run alongside 024 and silently reverted 019's option rewrites; caught only
+  by the routine post-migration verification (phrase-tell flood + length-gap spike). File deleted
+  (`37c8a0e`); ALWAYS re-run full verification after any DB change.
+- The embedded preview browser **cannot reach supabase.co** — the app hangs at "Loading…"
+  locally for everyone; verify data via service-role REST (`source .env.local`, never print
+  keys) and UI logic via type-check/tests; final eyeball happens on the Vercel deploy.
+- `python3 -m http.server` fails in the sandbox (`os.getcwd` EPERM) — use a tiny Node server
+  for static mockups. Headless Chrome isn't installed; **headless Firefox** renders ad PNGs
+  (one profile dir per run or shots silently drop).
+- Supabase SQL Editor: giant pastes can throw phantom parse errors (split ~100+ statements);
+  its destructive-operation warnings are usually false positives here.
+
+## Pre-launch checklist (ads should not spend until these close)
+
+1. Resolve the open issue above (stamp/026/possible leaderboard grants break).
+2. Throwaway-signup test on the deployed site: lands on auth form, signup completes,
+   profile has `invite_code='HOUSTON-BETA'`, Founding Tech badge attached.
+3. Re-render ad assets with the real domain + real tester handles (with permission);
+   update "27 real cases" → current count in field copy.
+4. Post-launch week-one roadmap (agreed priorities): per-question flag button ("dispute"),
+   per-question wrong-rate analytics, weekly leaderboard view styled as the Standings ad,
+   Daily Case at 2× XP (plumbing exists: `DAILY_XP_MULTIPLIER`/`isDaily` — no UI trigger).
 
 ## Test invite codes
-BAYEL, ZHU (also in `CLAUDE.md`)
+BAYEL, ZHU (also in `CLAUDE.md`) — signup no longer requires them.
