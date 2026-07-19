@@ -12,7 +12,17 @@ export type Tier = "Bronze"|"Silver"|"Gold"|"Platinum"|"Master";
 export type SkillDomain = "Electrical"|"Fuel"|"Emissions"|"Drivetrain"|"Network";
 
 export interface InviteCode { id:string; code:string; used_count:number; max_uses:number; is_active:boolean; created_at:string; }
-export interface Profile { id:string; full_name:string; role:UserRole; specialty:Specialty; shop_name:string; city:string; bio:string; avatar_url:string|null; xp:number; streak:number; tier:Tier; last_active:string|null; invite_code:string; created_at:string; }
+export interface Profile { id:string; full_name:string; role:UserRole; specialty:Specialty; shop_name:string; city:string; bio:string; avatar_url:string|null; xp:number; streak:number; tier:Tier; last_active:string|null; invite_code:string; created_at:string; is_admin?:boolean; }
+
+export type FlagReason = "wrong_answer"|"ambiguous"|"typo"|"other";
+export type FlagStatus = "open"|"resolved"|"dismissed";
+export interface QuestionFlag { id:string; question_id:string; user_id:string; reason:FlagReason; comment:string; status:FlagStatus; created_at:string; }
+export interface QuestionFlagEntry { id:string; reason:FlagReason; comment:string; status:FlagStatus; created_at:string; flagger:string; }
+// Admin-only shape: includes correct_index, which never reaches regular clients.
+export interface FlaggedQuestion {
+  question_id:string; question_text:string; options:string[]; correct_index:number;
+  explanation:string; challenge_title:string; open_count:number; flags:QuestionFlagEntry[];
+}
 export interface Challenge { id:string; slug:string; title:string; type:ChallengeType; specialty:Specialty; xp_reward:number; description:string; tags:string[]; is_published:boolean; created_at:string; }
 export interface Question { id:string; challenge_id:string; difficulty:Difficulty; tier_order:number; question_text:string; options:string[]; correct_index:number; explanation:string; created_at:string; }
 export interface Attempt { id:string; user_id:string; challenge_id:string; score:number; total_questions:number; xp_earned:number; speed_bonus_xp:number; time_seconds:number; grade:Grade|null; answers:AnswerRecord[]; completed:boolean; created_at:string; }
@@ -91,6 +101,7 @@ export interface Database {
       skill_scores: { Row:Flatten<SkillScore>; Insert:Omit<SkillScore,"id"|"updated_at">; Update:Partial<SkillScore>; Relationships:[] };
       challenge_domains: { Row:Flatten<ChallengeDomain>; Insert:Flatten<ChallengeDomain>; Update:Partial<ChallengeDomain>; Relationships:[] };
       comebacks: { Row:Flatten<Comeback>; Insert:Omit<Comeback,"first_missed_at"|"last_missed_at"|"cleared_at"|"cleared_count"> & Partial<Pick<Comeback,"first_missed_at"|"last_missed_at"|"cleared_at"|"cleared_count">>; Update:Partial<Comeback>; Relationships:[] };
+      question_flags: { Row:Flatten<QuestionFlag>; Insert:Omit<QuestionFlag,"id"|"created_at"|"status"> & {status?:FlagStatus}; Update:Partial<QuestionFlag>; Relationships:[] };
     };
     Views: {
       leaderboard: { Row:Flatten<LeaderboardRow>; Relationships:[] };

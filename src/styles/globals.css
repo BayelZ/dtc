@@ -3,11 +3,37 @@
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --border-radius-sm: 4px; --border-radius-md: 6px; --border-radius-lg: 10px;
 
-  /* Theme tokens — default: Night Shift (black + orange).
+  /* Theme tokens — default: Redline (near-black + warning red).
      Every themable color in the app reads one of these; themes override the
      whole set via :root[data-theme=...]. The Rework Bench blueprint palette
      (#0C2740 / #E9EEF2 / #B0523B / #8FB0C4 / #1E4568) is deliberately NOT
      tokenized — the bench keeps its identity in every theme. */
+  --bg: #120F10;
+  --bg-card: #1C1719;
+  --bg-raised: #261F22;
+  --border: #382C30;
+  --text: #F2EDEE;
+  --text-hi: #fff;
+  --text-dim: #CCC2C5;
+  --text-muted: #8F8388;
+  --text-faint: #5C5257;
+  --accent: #E23D3D;
+  --accent-hi: #FF5C5C;
+  --accent-soft: #FF8080;
+  --accent-tint: #2E1517;
+  --accent-contrast: #fff;
+  --gold: #E6B84A;
+  --info: #5AADE6;
+  --good: #6FCF6F;
+  --good-bg: #1A2E1A;
+  --good-border: #2D5A2D;
+  --bad: #FF7070;
+  --bad-bg: #2E1A1A;
+  --bad-border: #5A2D2D;
+}
+
+/* Night Shift — black and orange, the original. */
+:root[data-theme="night-shift"] {
   --bg: #0f0f0f;
   --bg-card: #1a1a1a;
   --bg-raised: #242424;

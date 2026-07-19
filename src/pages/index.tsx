@@ -12,6 +12,7 @@ import { ChallengesPage } from "@/views/challenges";
 import { LeaderboardPage } from "@/views/leaderboard";
 import { ProfilePage } from "@/views/profile";
 import { ShopPage } from "@/views/shop";
+import { DisputesPage } from "@/views/disputes";
 import type { Profile } from "@/lib/supabase/types";
 import { OPEN_BETA_INVITE_TAG } from "@/lib/constants";
 
@@ -49,6 +50,7 @@ const Home:NextPage = () => {
       {currentPage==="Leaderboard" && <LeaderboardPage profile={profile} onViewProfile={handleViewProfile} />}
       {currentPage==="Profile" && <ProfilePage userId={viewedUserId} isOwnProfile={isOwnProfile} onBack={!isOwnProfile ? ()=>handleNavigate("Leaderboard") : undefined} />}
       {currentPage==="Shop Portal" && <ShopPage />}
+      {currentPage==="Disputes" && <DisputesPage />}
     </AppShell>
   );
 };

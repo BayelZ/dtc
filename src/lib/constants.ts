@@ -33,6 +33,16 @@ export const ATTEMPT_RATE_WINDOW_S = 60;
 export const AVATAR_UPLOAD_RATE_MAX = 10;
 export const AVATAR_UPLOAD_RATE_WINDOW_S = 60;
 export const AVATAR_MAX_BYTES = 2 * 1024 * 1024;
+export const FLAG_RATE_MAX = 10;
+export const FLAG_RATE_WINDOW_S = 60;
+export const FLAG_COMMENT_MAX_LENGTH = 300;
+
+// Dispute categories — MUST mirror the reason CHECK in question_flags (migration 027)
+export const FLAG_REASONS = ["wrong_answer","ambiguous","typo","other"] as const;
+export const FLAG_REASON_LABELS: Record<string,string> = {
+  wrong_answer:"Marked answer is wrong", ambiguous:"More than one defensible answer",
+  typo:"Typo / wrong terminology", other:"Something else",
+};
 
 export const SPECIALTIES = ["Automotive","Diesel","Both"] as const;
 export const ROLES = ["mechanic","student","shop_owner"] as const;
@@ -55,5 +65,7 @@ export const ROUTES = {
     comebackQueue:"/api/comeback/queue",
     comebackAnswer:"/api/comeback/answer",
     profileAvatar:"/api/profile/avatar",
+    questionFlag:"/api/question/flag",
+    adminFlags:"/api/admin/flags",
   },
 } as const;

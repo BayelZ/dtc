@@ -1,6 +1,7 @@
 import React, { useCallback } from "react";
 import { Timer } from "@/components/ui/Timer";
 import { Badge } from "@/components/ui/Badge";
+import { DisputeButton } from "@/components/challenge/DisputeButton";
 import { QUESTION_TIME_SECONDS, QUESTIONS_PER_SESSION } from "@/lib/constants";
 import type { SafeQuestion } from "@/lib/supabase/types";
 import type { AnswerResult } from "@/hooks/useAttempt";
@@ -58,6 +59,8 @@ export const QuestionView:React.FC<QVProps> = ({question,questionNum,selected,an
           {!result.isCorrect && <p style={{margin:"8px 0 0",fontSize:12,color:"var(--good)"}}>Correct answer: {String.fromCharCode(65+result.correctIndex)}. {question.options[result.correctIndex]}</p>}
         </div>
       )}
+
+      {answered && <DisputeButton key={question.id} questionId={question.id} />}
 
       {answered && (
         <button onClick={onNext} style={{width:"100%",padding:"10px",background:"var(--accent)",color:"var(--accent-contrast)",border:"none",borderRadius:6,fontSize:13,fontWeight:500,cursor:"pointer"}}>
