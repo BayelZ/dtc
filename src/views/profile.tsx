@@ -83,10 +83,9 @@ export const ProfilePage:React.FC<ProfilePageProps> = ({userId,isOwnProfile,onBa
         )}
       </div>
 
-      {isOwnProfile && <ThemePicker />}
-
       {statsLoading ? <p style={{textAlign:"center",color:"var(--text-muted)",padding:"1rem 0"}}>Loading proficiency…</p> : <ProficiencyChart stats={stats} />}
       {badgesLoading ? <p style={{textAlign:"center",color:"var(--text-muted)",padding:"1rem 0"}}>Loading achievements…</p> : <AchievementsList badges={badges} />}
+      {isOwnProfile && <ThemePicker />}
     </div>
   );
 };
