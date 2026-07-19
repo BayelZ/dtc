@@ -38,7 +38,7 @@ const Home:NextPage = () => {
   const profile = dbProfile ?? localProfile;
   const viewedUserId = viewingUserId ?? user?.id;
   const isOwnProfile = !viewingUserId || viewingUserId===user?.id;
-  if (authLoading) return <div style={{minHeight:"100vh",background:"#0f0f0f",display:"flex",alignItems:"center",justifyContent:"center",color:"#888"}}>Loading…</div>;
+  if (authLoading) return <div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--text-muted)"}}>Loading…</div>;
   if (stage==="auth") return <AuthForm inviteCode={OPEN_BETA_INVITE_TAG} onAuth={handleAuth} />;
 
   return (

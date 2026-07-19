@@ -50,7 +50,7 @@ export function scoreToGrade(score:number, total:number):Grade {
   return "F";
 }
 export function gradeLabel(g:Grade):string { return {A:"Excellent",B:"Good",C:"Passing",F:"Failed"}[g]; }
-export function gradeColor(g:Grade):string { return {A:"#6fcf6f",B:"#5aade6",C:"#e6b84a",F:"#ff7070"}[g]; }
+export function gradeColor(g:Grade):string { return {A:"var(--good)",B:"var(--info)",C:"var(--gold)",F:"var(--bad)"}[g]; }
 
 export function xpToTier(xp:number):Tier {
   if (xp>=TIER_XP.Master) return "Master";
@@ -69,11 +69,20 @@ export function xpToNextTier(currentXP:number):{next:Tier;needed:number;progress
   return { next, needed: nextFloor-currentXP, progress: Math.round(((currentXP-currentFloor)/(nextFloor-currentFloor))*100) };
 }
 export function tierIcon(t:Tier):string { return {Bronze:"🥉",Silver:"🥈",Gold:"🥇",Platinum:"💎",Master:"👑"}[t]; }
+// Metal colors stay fixed across themes; bg/border are tinted against the
+// theme background via color-mix so tier chips read correctly on any theme.
+function tierChip(metal:string):{bg:string;color:string;border:string} {
+  return {
+    bg:`color-mix(in srgb, ${metal} 14%, var(--bg))`,
+    color:metal,
+    border:`color-mix(in srgb, ${metal} 45%, var(--bg))`,
+  };
+}
 export function tierColors(t:Tier):{bg:string;color:string;border:string} {
   return {
-    Bronze:{bg:"#2a1a08",color:"#CD7F32",border:"#7a4a18"}, Silver:{bg:"#1e1e1e",color:"#A8A9AD",border:"#555"},
-    Gold:{bg:"#2a2008",color:"#EF9F27",border:"#7a5a18"}, Platinum:{bg:"#1a1a2e",color:"#8888cc",border:"#444488"},
-    Master:{bg:"#2a1208",color:"#E85D24",border:"#883318"},
+    Bronze:tierChip("#CD7F32"), Silver:tierChip("#A8A9AD"),
+    Gold:tierChip("#EF9F27"), Platinum:tierChip("#8888cc"),
+    Master:tierChip("var(--accent)"),
   }[t];
 }
 

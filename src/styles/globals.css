@@ -2,14 +2,147 @@
 :root {
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --border-radius-sm: 4px; --border-radius-md: 6px; --border-radius-lg: 10px;
+
+  /* Theme tokens — default: Night Shift (black + orange).
+     Every themable color in the app reads one of these; themes override the
+     whole set via :root[data-theme=...]. The Rework Bench blueprint palette
+     (#0C2740 / #E9EEF2 / #B0523B / #8FB0C4 / #1E4568) is deliberately NOT
+     tokenized — the bench keeps its identity in every theme. */
+  --bg: #0f0f0f;
+  --bg-card: #1a1a1a;
+  --bg-raised: #242424;
+  --border: #2e2e2e;
+  --text: #f0f0f0;
+  --text-hi: #fff;
+  --text-dim: #ccc;
+  --text-muted: #888;
+  --text-faint: #555;
+  --accent: #E85D24;
+  --accent-hi: #ff7a45;
+  --accent-soft: #ff8a6b;
+  --accent-tint: #2a1a12;
+  --accent-contrast: #fff;
+  --gold: #e6b84a;
+  --info: #5aade6;
+  --good: #6fcf6f;
+  --good-bg: #1a2e1a;
+  --good-border: #2d5a2d;
+  --bad: #ff7070;
+  --bad-bg: #2e1a1a;
+  --bad-border: #5a2d2d;
 }
-html, body { background: #0f0f0f; color: #f0f0f0; font-family: var(--font-sans); line-height: 1.5; }
+
+/* Blueprint — the bench's blue and soapstone, app-wide. */
+:root[data-theme="blueprint"] {
+  --bg: #0C2740;
+  --bg-card: #10314F;
+  --bg-raised: #16395A;
+  --border: #24486B;
+  --text: #E9EEF2;
+  --text-hi: #fff;
+  --text-dim: #C2D2DD;
+  --text-muted: #8FB0C4;
+  --text-faint: #5E7F94;
+  --accent: #DE7048;
+  --accent-hi: #F08B60;
+  --accent-soft: #F5A98A;
+  --accent-tint: #25303F;
+  --accent-contrast: #fff;
+  --gold: #E6C25A;
+  --info: #7FB8E6;
+  --good: #7FD59A;
+  --good-bg: #143C31;
+  --good-border: #2A5C48;
+  --bad: #FF8B7A;
+  --bad-bg: #3C2230;
+  --bad-border: #6B3948;
+}
+
+/* Day Shift — light: warm paper and shop white. */
+:root[data-theme="day-shift"] {
+  --bg: #F2F0EB;
+  --bg-card: #FFFFFF;
+  --bg-raised: #E9E6DF;
+  --border: #D8D4CB;
+  --text: #23201C;
+  --text-hi: #000;
+  --text-dim: #4A453E;
+  --text-muted: #7A736A;
+  --text-faint: #A39B90;
+  --accent: #D14E14;
+  --accent-hi: #B84512;
+  --accent-soft: #A03D10;
+  --accent-tint: #F7DFD2;
+  --accent-contrast: #fff;
+  --gold: #A87B14;
+  --info: #2372B5;
+  --good: #2E8C46;
+  --good-bg: #E2F2E4;
+  --good-border: #B5D9BC;
+  --bad: #C2402E;
+  --bad-bg: #FAE3DF;
+  --bad-border: #E5B4AC;
+}
+
+/* Redline — near-black and warning red. */
+:root[data-theme="redline"] {
+  --bg: #120F10;
+  --bg-card: #1C1719;
+  --bg-raised: #261F22;
+  --border: #382C30;
+  --text: #F2EDEE;
+  --text-hi: #fff;
+  --text-dim: #CCC2C5;
+  --text-muted: #8F8388;
+  --text-faint: #5C5257;
+  --accent: #E23D3D;
+  --accent-hi: #FF5C5C;
+  --accent-soft: #FF8080;
+  --accent-tint: #2E1517;
+  --accent-contrast: #fff;
+  --gold: #E6B84A;
+  --info: #5AADE6;
+  --good: #6FCF6F;
+  --good-bg: #1A2E1A;
+  --good-border: #2D5A2D;
+  --bad: #FF7070;
+  --bad-bg: #2E1A1A;
+  --bad-border: #5A2D2D;
+}
+
+/* Hi-Vis — graphite and safety yellow. */
+:root[data-theme="hi-vis"] {
+  --bg: #121307;
+  --bg-card: #1B1D0E;
+  --bg-raised: #252814;
+  --border: #383D1E;
+  --text: #F1F2E8;
+  --text-hi: #fff;
+  --text-dim: #CBCDBB;
+  --text-muted: #8F937B;
+  --text-faint: #5C5F4C;
+  --accent: #D6E23D;
+  --accent-hi: #E4EE62;
+  --accent-soft: #EDF48D;
+  --accent-tint: #272B12;
+  --accent-contrast: #171907;
+  --gold: #E6B84A;
+  --info: #7FB8E6;
+  --good: #8FD56F;
+  --good-bg: #1E2E14;
+  --good-border: #3A5A28;
+  --bad: #FF8570;
+  --bad-bg: #2E1D1A;
+  --bad-border: #5A382D;
+}
+
+html, body { background: var(--bg); color: var(--text); font-family: var(--font-sans); line-height: 1.5; }
 button, input { font-family: var(--font-sans); }
 a { color: inherit; text-decoration: none; }
-:focus-visible { outline: 2px solid #e85d24; outline-offset: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #0f0f0f; }
-::-webkit-scrollbar-thumb { background: #2e2e2e; border-radius: 3px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 @keyframes xpPop {
   0%{opacity:0;transform:scale(.5) translateY(0)} 30%{opacity:1;transform:scale(1.2) translateY(-20px)}
   70%{opacity:1;transform:scale(1) translateY(-40px)} 100%{opacity:0;transform:scale(.8) translateY(-80px)}
@@ -18,8 +151,8 @@ a { color: inherit; text-decoration: none; }
   0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)}
   60%{transform:translateX(-6px)} 80%{transform:translateX(6px)}
 }
-@keyframes tierPulse { 0%,100%{box-shadow:0 0 0 0 rgba(232,93,36,.3)} 50%{box-shadow:0 0 0 6px rgba(232,93,36,0)} }
-@keyframes avatarPulse { 0%,100%{box-shadow:0 0 0 0 rgba(232,93,36,.4)} 50%{box-shadow:0 0 0 12px rgba(232,93,36,0)} }
+@keyframes tierPulse { 0%,100%{box-shadow:0 0 0 0 color-mix(in srgb, var(--accent) 30%, transparent)} 50%{box-shadow:0 0 0 6px transparent} }
+@keyframes avatarPulse { 0%,100%{box-shadow:0 0 0 0 color-mix(in srgb, var(--accent) 40%, transparent)} 50%{box-shadow:0 0 0 12px transparent} }
 @keyframes octoGrow { 0%{transform:scale(.4);opacity:0} 70%{transform:scale(1.08)} 100%{transform:scale(1);opacity:1} }
 @keyframes dotPop { 0%{transform:scale(0);opacity:0} 60%{transform:scale(1.5);opacity:1} 100%{transform:scale(1)} }
 @keyframes barGrow { from{width:0%} }

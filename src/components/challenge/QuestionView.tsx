@@ -13,30 +13,30 @@ export const QuestionView:React.FC<QVProps> = ({question,questionNum,selected,an
   const handleExpire=useCallback(()=>{ if (!answered) onTimeout(); },[answered,onTimeout]);
 
   return (
-    <div style={{background:"#1a1a1a",border:"0.5px solid #2e2e2e",borderRadius:10,padding:"1.25rem"}}>
+    <div style={{background:"var(--bg-card)",border:"0.5px solid var(--border)",borderRadius:10,padding:"1.25rem"}}>
       <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
         <div style={{display:"flex",gap:4}}>
           {Array.from({length:QUESTIONS_PER_SESSION}).map((_,i)=>(
-            <div key={i} style={{width:28,height:4,borderRadius:2,background:i<questionNum-1?"#E85D24":i===questionNum-1?"#5a2e12":"#2e2e2e",border:i===questionNum-1?"0.5px solid #E85D24":"none"}} />
+            <div key={i} style={{width:28,height:4,borderRadius:2,background:i<questionNum-1?"var(--accent)":i===questionNum-1?"color-mix(in srgb, var(--accent) 35%, var(--bg))":"var(--border)",border:i===questionNum-1?"0.5px solid var(--accent)":"none"}} />
           ))}
         </div>
         <div style={{flex:1}}>
           {!answered
             ? <Timer key={question.id} seconds={QUESTION_TIME_SECONDS} onExpire={handleExpire} />
-            : <span style={{fontSize:11,color:"#555"}}>Q{questionNum} of {QUESTIONS_PER_SESSION}</span>
+            : <span style={{fontSize:11,color:"var(--text-faint)"}}>Q{questionNum} of {QUESTIONS_PER_SESSION}</span>
           }
         </div>
         <Badge label={difficulty} variant="difficulty" />
       </div>
 
-      <p style={{fontSize:15,fontWeight:500,margin:"0 0 14px",lineHeight:1.6,color:"#f0f0f0"}}>{question.question_text}</p>
+      <p style={{fontSize:15,fontWeight:500,margin:"0 0 14px",lineHeight:1.6,color:"var(--text)"}}>{question.question_text}</p>
 
       <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:14}}>
         {(question.options??[]).map((opt,i)=>{
           const isSelected=selected===i, isCorrect=answered&&result!=null&&i===result.correctIndex, isWrong=answered&&isSelected&&result!=null&&!result.isCorrect;
-          let bg="#242424",border="#2e2e2e",color="#f0f0f0";
-          if (answered) { if(isCorrect){bg="#1a2e1a";border="#2d5a2d";color="#6fcf6f";} else if(isWrong){bg="#2e1a1a";border="#5a2d2d";color="#ff7070";} else color="#555"; }
-          else if (isSelected) { bg="#2a1a12";border="#E85D24";color="#ff7a45"; }
+          let bg="var(--bg-raised)",border="var(--border)",color="var(--text)";
+          if (answered) { if(isCorrect){bg="var(--good-bg)";border="var(--good-border)";color="var(--good)";} else if(isWrong){bg="var(--bad-bg)";border="var(--bad-border)";color="var(--bad)";} else color="var(--text-faint)"; }
+          else if (isSelected) { bg="var(--accent-tint)";border="var(--accent)";color="var(--accent-hi)"; }
           return (
             <div key={i} role="button" aria-pressed={isSelected} aria-disabled={answered||loading} tabIndex={answered?-1:0}
               onClick={()=>!answered&&!loading&&onAnswer(i)} onKeyDown={e=>e.key==="Enter"&&!answered&&!loading&&onAnswer(i)}
@@ -49,18 +49,18 @@ export const QuestionView:React.FC<QVProps> = ({question,questionNum,selected,an
         })}
       </div>
 
-      {timedOut && <div style={{background:"#2e1a1a",border:"0.5px solid #5a2d2d",borderRadius:6,padding:"8px 12px",marginBottom:10,fontSize:12,color:"#ff7070"}}>Time expired on this question.</div>}
+      {timedOut && <div style={{background:"var(--bad-bg)",border:"0.5px solid var(--bad-border)",borderRadius:6,padding:"8px 12px",marginBottom:10,fontSize:12,color:"var(--bad)"}}>Time expired on this question.</div>}
 
       {answered && result && (
-        <div style={{background:"#242424",border:`0.5px solid ${result.isCorrect?"#2d5a2d":"#5a2d2d"}`,borderRadius:6,padding:"10px 14px",marginBottom:14,fontSize:13,color:"#888",lineHeight:1.6}}>
-          <span style={{fontWeight:500,color:result.isCorrect?"#6fcf6f":"#ff7070"}}>{result.isCorrect?"Correct — ":"Incorrect — "}</span>
+        <div style={{background:"var(--bg-raised)",border:`0.5px solid ${result.isCorrect?"var(--good-border)":"var(--bad-border)"}`,borderRadius:6,padding:"10px 14px",marginBottom:14,fontSize:13,color:"var(--text-muted)",lineHeight:1.6}}>
+          <span style={{fontWeight:500,color:result.isCorrect?"var(--good)":"var(--bad)"}}>{result.isCorrect?"Correct — ":"Incorrect — "}</span>
           {result.explanation}
-          {!result.isCorrect && <p style={{margin:"8px 0 0",fontSize:12,color:"#6fcf6f"}}>Correct answer: {String.fromCharCode(65+result.correctIndex)}. {question.options[result.correctIndex]}</p>}
+          {!result.isCorrect && <p style={{margin:"8px 0 0",fontSize:12,color:"var(--good)"}}>Correct answer: {String.fromCharCode(65+result.correctIndex)}. {question.options[result.correctIndex]}</p>}
         </div>
       )}
 
       {answered && (
-        <button onClick={onNext} style={{width:"100%",padding:"10px",background:"#E85D24",color:"#fff",border:"none",borderRadius:6,fontSize:13,fontWeight:500,cursor:"pointer"}}>
+        <button onClick={onNext} style={{width:"100%",padding:"10px",background:"var(--accent)",color:"var(--accent-contrast)",border:"none",borderRadius:6,fontSize:13,fontWeight:500,cursor:"pointer"}}>
           {isLastQ?"See results":"Next question"}
         </button>
       )}

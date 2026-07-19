@@ -6,12 +6,12 @@ import { resizeImageToSquareWebp, blobToBase64 } from "@/lib/imageResize";
 import { getSupabase } from "@/lib/supabase/client";
 import type { Profile } from "@/lib/supabase/types";
 
-const PRIMARY = "#E85D24";
+const PRIMARY = "var(--accent)";
 const BIO_MAX = 160;
 const AVATAR_ACCEPT = "image/jpeg,image/png,image/webp";
 const AVATAR_MAX_BYTES = 5*1024*1024;
-const PLACEHOLDER_BG = "#2a1a12";
-const PLACEHOLDER_COLOR = "#E85D24";
+const PLACEHOLDER_BG = "var(--accent-tint)";
+const PLACEHOLDER_COLOR = "var(--accent)";
 
 interface ProfileHeaderProps {
   profile:Profile;
@@ -75,9 +75,9 @@ export const ProfileHeader:React.FC<ProfileHeaderProps> = ({profile,rank,isOwnPr
   const subline=`${profile.shop_name||"Independent"} · ${profile.specialty} specialist · ${BETA_REGION}${rank!=null?` · Rank #${rank}`:""}`;
 
   return (
-    <div style={{position:"relative",background:"#1a1a1a",border:"0.5px solid #2e2e2e",borderRadius:12,padding:"1.75rem",marginBottom:18,overflow:"hidden"}}>
+    <div style={{position:"relative",background:"var(--bg-card)",border:"0.5px solid var(--border)",borderRadius:12,padding:"1.75rem",marginBottom:18,overflow:"hidden"}}>
       <div style={{position:"absolute",inset:0,opacity:0.5,backgroundImage:"repeating-linear-gradient(0deg, rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 28px), repeating-linear-gradient(90deg, rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 28px)",maskImage:"radial-gradient(circle at 8% 15%, black, transparent 70%)",WebkitMaskImage:"radial-gradient(circle at 8% 15%, black, transparent 70%)"}} />
-      <div style={{position:"absolute",top:0,left:0,right:0,height:4,background:`linear-gradient(90deg, ${PRIMARY}, #e6b84a, #2BB8A8, #9B7FE8)`}} />
+      <div style={{position:"absolute",top:0,left:0,right:0,height:4,background:`linear-gradient(90deg, ${PRIMARY}, var(--gold), #2BB8A8, #9B7FE8)`}} />
 
       <div style={{position:"relative",display:"flex",gap:24,alignItems:"flex-start",flexWrap:"wrap"}}>
         <div style={{position:"relative",width:96,height:96,flexShrink:0}}>
@@ -89,12 +89,12 @@ export const ProfileHeader:React.FC<ProfileHeaderProps> = ({profile,rank,isOwnPr
               ? <img src={profile.avatar_url} alt={profile.full_name} style={{width:"100%",height:"100%",objectFit:"cover"}} />
               : initials}
           </div>
-          <div style={{position:"absolute",bottom:-2,right:-2,width:32,height:32,borderRadius:"50%",background:tc.bg,border:"2px solid #0f0f0f",display:"flex",alignItems:"center",justifyContent:"center"}}>
+          <div style={{position:"absolute",bottom:-2,right:-2,width:32,height:32,borderRadius:"50%",background:tc.bg,border:"2px solid var(--bg)",display:"flex",alignItems:"center",justifyContent:"center"}}>
             <Icon icon="shield" size={16} color={tc.color} strokeWidth={2.2} />
           </div>
           {isOwnProfile && (
-            <div onClick={openFilePicker} title="Change photo" style={{position:"absolute",top:-4,right:-4,width:26,height:26,borderRadius:"50%",background:PRIMARY,display:"flex",alignItems:"center",justifyContent:"center",border:"2px solid #0f0f0f",cursor:uploadingAvatar?"wait":"pointer"}}>
-              <Icon icon="camera" size={13} color="#fff" strokeWidth={2.2} />
+            <div onClick={openFilePicker} title="Change photo" style={{position:"absolute",top:-4,right:-4,width:26,height:26,borderRadius:"50%",background:PRIMARY,display:"flex",alignItems:"center",justifyContent:"center",border:"2px solid var(--bg)",cursor:uploadingAvatar?"wait":"pointer"}}>
+              <Icon icon="camera" size={13} color="var(--accent-contrast)" strokeWidth={2.2} />
             </div>
           )}
         </div>
@@ -102,38 +102,38 @@ export const ProfileHeader:React.FC<ProfileHeaderProps> = ({profile,rank,isOwnPr
         <div style={{flex:1,minWidth:260}}>
           <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",rowGap:6,marginBottom:10}}>
             <h1 style={{fontSize:26,fontWeight:600,margin:0,lineHeight:1.3,whiteSpace:"nowrap",flexShrink:0}}>{profile.full_name}</h1>
-            <span style={{display:"inline-flex",alignItems:"center",gap:6,padding:"4px 12px",background:`linear-gradient(135deg, ${tc.bg}, ${tc.color}26)`,border:`0.5px solid ${tc.border}`,borderRadius:20,fontSize:13,fontWeight:600,color:tc.color,flexShrink:0,boxShadow:"0 2px 8px rgba(0,0,0,0.3)"}}>
+            <span style={{display:"inline-flex",alignItems:"center",gap:6,padding:"4px 12px",background:`linear-gradient(135deg, ${tc.bg}, color-mix(in srgb, ${tc.color} 15%, transparent))`,border:`0.5px solid ${tc.border}`,borderRadius:20,fontSize:13,fontWeight:600,color:tc.color,flexShrink:0,boxShadow:"0 2px 8px rgba(0,0,0,0.3)"}}>
               <Icon icon="shield" size={14} color={tc.color} strokeWidth={2.2} /> {profile.tier}
             </span>
           </div>
           {isOwnProfile && (uploadingAvatar||avatarError) && (
-            <p style={{fontSize:12,color:avatarError?"#ff7070":"#888",margin:"0 0 6px"}}>{avatarError??"Uploading photo…"}</p>
+            <p style={{fontSize:12,color:avatarError?"var(--bad)":"var(--text-muted)",margin:"0 0 6px"}}>{avatarError??"Uploading photo…"}</p>
           )}
-          <p style={{fontSize:14,color:"#999",margin:"6px 0 12px",lineHeight:1.5}}>{subline}</p>
+          <p style={{fontSize:14,color:"var(--text-muted)",margin:"6px 0 12px",lineHeight:1.5}}>{subline}</p>
 
           {!isOwnProfile ? (
-            profile.bio && <p style={{fontSize:15,color:"#f0f0f0",lineHeight:1.7,margin:"0 0 12px"}}>{profile.bio}</p>
+            profile.bio && <p style={{fontSize:15,color:"var(--text)",lineHeight:1.7,margin:"0 0 12px"}}>{profile.bio}</p>
           ) : editingBio ? (
             <div style={{marginBottom:12}}>
               <textarea value={draftBio} onChange={e=>setDraftBio(e.target.value.slice(0,BIO_MAX))} maxLength={BIO_MAX} rows={2}
-                style={{width:"100%",background:"#242424",border:"0.5px solid #3e3e3e",borderRadius:6,color:"#f0f0f0",fontSize:15,padding:"10px 12px",outline:"none",resize:"vertical",fontFamily:"inherit",boxSizing:"border-box"}} />
+                style={{width:"100%",background:"var(--bg-raised)",border:"0.5px solid var(--border)",borderRadius:6,color:"var(--text)",fontSize:15,padding:"10px 12px",outline:"none",resize:"vertical",fontFamily:"inherit",boxSizing:"border-box"}} />
               <div style={{display:"flex",gap:8,marginTop:8,alignItems:"center"}}>
-                <button onClick={saveEdit} disabled={saving} style={{padding:"6px 14px",fontSize:13,background:PRIMARY,color:"#fff",border:"none",borderRadius:5,cursor:saving?"not-allowed":"pointer",fontWeight:500,opacity:saving?0.6:1}}>{saving?"Saving…":"Save"}</button>
-                <button onClick={cancelEdit} disabled={saving} style={{padding:"6px 14px",fontSize:13,background:"none",color:"#999",border:"0.5px solid #2e2e2e",borderRadius:5,cursor:"pointer"}}>Cancel</button>
-                <span style={{fontSize:11,color:"#555",marginLeft:"auto"}}>{draftBio.length}/{BIO_MAX}</span>
+                <button onClick={saveEdit} disabled={saving} style={{padding:"6px 14px",fontSize:13,background:PRIMARY,color:"var(--accent-contrast)",border:"none",borderRadius:5,cursor:saving?"not-allowed":"pointer",fontWeight:500,opacity:saving?0.6:1}}>{saving?"Saving…":"Save"}</button>
+                <button onClick={cancelEdit} disabled={saving} style={{padding:"6px 14px",fontSize:13,background:"none",color:"var(--text-muted)",border:"0.5px solid var(--border)",borderRadius:5,cursor:"pointer"}}>Cancel</button>
+                <span style={{fontSize:11,color:"var(--text-faint)",marginLeft:"auto"}}>{draftBio.length}/{BIO_MAX}</span>
               </div>
             </div>
           ) : (
-            <p onClick={startEdit} style={{fontSize:15,color:profile.bio?"#f0f0f0":"#666",lineHeight:1.7,margin:"0 0 12px",cursor:"pointer"}}>
+            <p onClick={startEdit} style={{fontSize:15,color:profile.bio?"var(--text)":"var(--text-faint)",lineHeight:1.7,margin:"0 0 12px",cursor:"pointer"}}>
               {profile.bio||"Click to add a bio…"}
             </p>
           )}
 
           <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-            <span style={{fontSize:12,fontWeight:500,background:"#2a2010",color:"#e6b84a",border:"0.5px solid #5a4010",padding:"3px 10px",borderRadius:5}}>{profile.specialty}</span>
-            <span style={{fontSize:12,fontWeight:500,background:"#242424",color:"#999",padding:"3px 10px",borderRadius:5,textTransform:"capitalize"}}>{profile.role.replace("_"," ")}</span>
-            <span style={{fontSize:12,fontWeight:500,background:"#2e1a1a",color:"#ff8a6b",padding:"3px 10px",borderRadius:5,display:"inline-flex",alignItems:"center",gap:5}}>
-              <Icon icon="flame" size={13} color="#ff8a6b" strokeWidth={2.2} /> {profile.streak}-day streak
+            <span style={{fontSize:12,fontWeight:500,background:"color-mix(in srgb, var(--gold) 14%, var(--bg))",color:"var(--gold)",border:"0.5px solid color-mix(in srgb, var(--gold) 35%, var(--bg))",padding:"3px 10px",borderRadius:5}}>{profile.specialty}</span>
+            <span style={{fontSize:12,fontWeight:500,background:"var(--bg-raised)",color:"var(--text-muted)",padding:"3px 10px",borderRadius:5,textTransform:"capitalize"}}>{profile.role.replace("_"," ")}</span>
+            <span style={{fontSize:12,fontWeight:500,background:"var(--bad-bg)",color:"var(--accent-soft)",padding:"3px 10px",borderRadius:5,display:"inline-flex",alignItems:"center",gap:5}}>
+              <Icon icon="flame" size={13} color="var(--accent-soft)" strokeWidth={2.2} /> {profile.streak}-day streak
             </span>
           </div>
         </div>

@@ -9,14 +9,14 @@ export const TierProgress:React.FC<{xp:number;showLabel?:boolean}> = ({xp,showLa
     <div>
       {showLabel && (
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-          <span style={{fontSize:12,color:"#888"}}>{isMaster?"Max tier reached":`Next: ${tierIcon(next)} ${next}`}</span>
-          {!isMaster && <span style={{fontSize:12,color:"#888"}}>{formatXP(needed)} XP to go</span>}
+          <span style={{fontSize:12,color:"var(--text-muted)"}}>{isMaster?"Max tier reached":`Next: ${tierIcon(next)} ${next}`}</span>
+          {!isMaster && <span style={{fontSize:12,color:"var(--text-muted)"}}>{formatXP(needed)} XP to go</span>}
         </div>
       )}
-      <div style={{height:6,background:"#2e2e2e",borderRadius:3,overflow:"hidden"}}>
+      <div style={{height:6,background:"var(--border)",borderRadius:3,overflow:"hidden"}}>
         <div style={{height:6,width:`${isMaster?100:progress}%`,background:color,borderRadius:3,transition:"width 0.6s ease"}} />
       </div>
-      {showLabel && !isMaster && <div style={{marginTop:4}}><span style={{fontSize:10,color:"#555"}}>{progress}% complete</span></div>}
+      {showLabel && !isMaster && <div style={{marginTop:4}}><span style={{fontSize:10,color:"var(--text-faint)"}}>{progress}% complete</span></div>}
     </div>
   );
 };

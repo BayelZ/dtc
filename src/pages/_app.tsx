@@ -9,9 +9,9 @@ class ErrorBoundary extends React.Component<{children:React.ReactNode},EBState> 
   componentDidCatch(e:Error,info:React.ErrorInfo) { console.error("[DTC ErrorBoundary]",e,info.componentStack); }
   render() {
     if (this.state.hasError) return (
-      <div style={{minHeight:"100vh",background:"#0f0f0f",display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:12,padding:"2rem",color:"#f0f0f0"}}>
-        <span style={{fontSize:32}}>⚠️</span><h2 style={{margin:0}}>Something went wrong</h2><p style={{color:"#888",margin:0}}>{this.state.message}</p>
-        <button onClick={()=>window.location.reload()} style={{padding:"8px 20px",background:"#E85D24",color:"#fff",border:"none",borderRadius:6,cursor:"pointer"}}>Reload page</button>
+      <div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:12,padding:"2rem",color:"var(--text)"}}>
+        <span style={{fontSize:32}}>⚠️</span><h2 style={{margin:0}}>Something went wrong</h2><p style={{color:"var(--text-muted)",margin:0}}>{this.state.message}</p>
+        <button onClick={()=>window.location.reload()} style={{padding:"8px 20px",background:"var(--accent)",color:"var(--accent-contrast)",border:"none",borderRadius:6,cursor:"pointer"}}>Reload page</button>
       </div>
     );
     return this.props.children;

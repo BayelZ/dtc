@@ -4,6 +4,7 @@ import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { ProfileStats } from "@/components/profile/ProfileStats";
 import { ProficiencyChart } from "@/components/profile/ProficiencyChart";
 import { AchievementsList } from "@/components/profile/AchievementsList";
+import { ThemePicker } from "@/components/profile/ThemePicker";
 import { useProfile } from "@/hooks/useProfile";
 import { useProficiency } from "@/hooks/useProficiency";
 import { useBadges } from "@/hooks/useBadges";
@@ -39,7 +40,7 @@ export const ProfilePage:React.FC<ProfilePageProps> = ({userId,isOwnProfile,onBa
   // The API route already persists avatar_url server-side (via admin client) — just sync local state.
   const handleAvatarUploaded=useCallback((avatar_url:string)=>{ mutate({avatar_url}); },[mutate]);
 
-  if (!profile?.id) return <p style={{textAlign:"center",color:"#888",padding:"3rem 0"}}>Loading profile…</p>;
+  if (!profile?.id) return <p style={{textAlign:"center",color:"var(--text-muted)",padding:"3rem 0"}}>Loading profile…</p>;
 
   const { next, needed, progress } = xpToNextTier(profile.xp);
   const hasNextTier = needed>0 || profile.tier!=="Master";
@@ -49,7 +50,7 @@ export const ProfilePage:React.FC<ProfilePageProps> = ({userId,isOwnProfile,onBa
   return (
     <div style={{maxWidth:900,margin:"0 auto"}}>
       {onBack && (
-        <button onClick={onBack} style={{background:"none",border:"none",fontSize:13,color:"#888",cursor:"pointer",padding:"0 0 12px"}}>← Back to leaderboard</button>
+        <button onClick={onBack} style={{background:"none",border:"none",fontSize:13,color:"var(--text-muted)",cursor:"pointer",padding:"0 0 12px"}}>← Back to leaderboard</button>
       )}
       <ProfileHeader profile={profile} rank={rank} isOwnProfile={isOwnProfile} onSaveBio={handleSaveBio} onAvatarUploaded={handleAvatarUploaded} />
       <ProfileStats profile={profile} rank={rank} earnedCount={earnedCount} totalBadges={badges.length} />
@@ -64,26 +65,28 @@ export const ProfilePage:React.FC<ProfilePageProps> = ({userId,isOwnProfile,onBa
         </div>
       )}
 
-      <div style={{background:"#1a1a1a",border:"0.5px solid #2e2e2e",borderRadius:10,padding:"16px 18px",marginBottom:18}}>
+      <div style={{background:"var(--bg-card)",border:"0.5px solid var(--border)",borderRadius:10,padding:"16px 18px",marginBottom:18}}>
         {hasNextTier ? (
           <div>
             <div style={{display:"flex",justifyContent:"space-between",marginBottom:8,flexWrap:"wrap",gap:6}}>
-              <span style={{fontSize:13,color:"#999",display:"flex",alignItems:"center",gap:6}}>
+              <span style={{fontSize:13,color:"var(--text-muted)",display:"flex",alignItems:"center",gap:6}}>
                 <Icon icon="shield" size={14} color={nextTierColor} /> Next tier: {next}
               </span>
-              <span style={{fontSize:13,color:"#999"}}>{needed.toLocaleString()} XP remaining</span>
+              <span style={{fontSize:13,color:"var(--text-muted)"}}>{needed.toLocaleString()} XP remaining</span>
             </div>
-            <div style={{height:7,background:"#242424",borderRadius:4}}>
+            <div style={{height:7,background:"var(--bg-raised)",borderRadius:4}}>
               <div style={{height:7,width:`${progress}%`,background:nextTierColor,borderRadius:4}} />
             </div>
           </div>
         ) : (
-          <div style={{fontSize:13,color:"#999"}}>Maximum tier reached — Master</div>
+          <div style={{fontSize:13,color:"var(--text-muted)"}}>Maximum tier reached — Master</div>
         )}
       </div>
 
-      {statsLoading ? <p style={{textAlign:"center",color:"#888",padding:"1rem 0"}}>Loading proficiency…</p> : <ProficiencyChart stats={stats} />}
-      {badgesLoading ? <p style={{textAlign:"center",color:"#888",padding:"1rem 0"}}>Loading achievements…</p> : <AchievementsList badges={badges} />}
+      {isOwnProfile && <ThemePicker />}
+
+      {statsLoading ? <p style={{textAlign:"center",color:"var(--text-muted)",padding:"1rem 0"}}>Loading proficiency…</p> : <ProficiencyChart stats={stats} />}
+      {badgesLoading ? <p style={{textAlign:"center",color:"var(--text-muted)",padding:"1rem 0"}}>Loading achievements…</p> : <AchievementsList badges={badges} />}
     </div>
   );
 };

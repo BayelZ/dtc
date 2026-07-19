@@ -18,15 +18,15 @@ export const DashboardPage:React.FC<{profile:Partial<Profile>|null;onNavigate:(p
     <div>
       <div style={{marginBottom:"1.5rem"}}>
         <h1 style={{fontSize:22,fontWeight:500,margin:"0 0 4px"}}>Good morning, {name}</h1>
-        <p style={{fontSize:14,color:"#888",margin:0}}>Houston Beta · {spec} specialist</p>
+        <p style={{fontSize:14,color:"var(--text-muted)",margin:0}}>Houston Beta · {spec} specialist</p>
       </div>
 
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,minmax(0,1fr))",gap:12,marginBottom:"1.5rem"}}>
         {[{label:"Total XP",value:formatXP(xp),sub:"Lifetime"},{label:"Streak",value:`${streak}d`,sub:"Current"},{label:"Specialty",value:spec,sub:"Primary focus"},{label:"Region",value:"Houston",sub:"Beta area"}].map(s=>(
-          <div key={s.label} style={{background:"#1a1a1a",border:"0.5px solid #2e2e2e",borderRadius:8,padding:"1rem",minWidth:0}}>
-            <p style={{fontSize:12,color:"#888",margin:"0 0 4px"}}>{s.label}</p>
+          <div key={s.label} style={{background:"var(--bg-card)",border:"0.5px solid var(--border)",borderRadius:8,padding:"1rem",minWidth:0}}>
+            <p style={{fontSize:12,color:"var(--text-muted)",margin:"0 0 4px"}}>{s.label}</p>
             <p style={{fontSize:22,fontWeight:500,margin:"0 0 2px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.value}</p>
-            <p style={{fontSize:11,color:"#555",margin:0}}>{s.sub}</p>
+            <p style={{fontSize:11,color:"var(--text-faint)",margin:0}}>{s.sub}</p>
           </div>
         ))}
       </div>
@@ -34,7 +34,7 @@ export const DashboardPage:React.FC<{profile:Partial<Profile>|null;onNavigate:(p
       <Card style={{marginBottom:16}}>
         <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
           <TierBadge tier={tier} size="md" showLabel />
-          <span style={{fontSize:12,color:"#888"}}>{xp.toLocaleString()} XP total</span>
+          <span style={{fontSize:12,color:"var(--text-muted)"}}>{xp.toLocaleString()} XP total</span>
         </div>
         <TierProgress xp={xp} />
       </Card>
@@ -61,13 +61,13 @@ export const DashboardPage:React.FC<{profile:Partial<Profile>|null;onNavigate:(p
       </div>
 
       <Card>
-        <p style={{fontSize:13,fontWeight:500,margin:"0 0 12px"}}>All challenges {loading && <span style={{fontSize:11,color:"#555"}}>loading…</span>}</p>
+        <p style={{fontSize:13,fontWeight:500,margin:"0 0 12px"}}>All challenges {loading && <span style={{fontSize:11,color:"var(--text-faint)"}}>loading…</span>}</p>
         <div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:10}}>
           {challenges.map(c=>(
-            <div key={c.id} onClick={()=>onNavigate("Challenges")} style={{border:"0.5px solid #2e2e2e",borderRadius:6,padding:"10px 12px",cursor:"pointer",background:"#242424"}}>
+            <div key={c.id} onClick={()=>onNavigate("Challenges")} style={{border:"0.5px solid var(--border)",borderRadius:6,padding:"10px 12px",cursor:"pointer",background:"var(--bg-raised)"}}>
               <div style={{display:"flex",gap:6,marginBottom:6}}><span style={{fontSize:13}}>{CHALLENGE_TYPE_ICONS[c.type]??"❓"}</span></div>
               <p style={{fontSize:13,fontWeight:500,margin:"0 0 6px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.title}</p>
-              <div style={{display:"flex",gap:6,alignItems:"center"}}><Badge label={c.specialty} variant="specialty" /><span style={{fontSize:11,color:"#555"}}>{c.xp_reward} XP</span></div>
+              <div style={{display:"flex",gap:6,alignItems:"center"}}><Badge label={c.specialty} variant="specialty" /><span style={{fontSize:11,color:"var(--text-faint)"}}>{c.xp_reward} XP</span></div>
             </div>
           ))}
         </div>

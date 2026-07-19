@@ -25,11 +25,11 @@ export const ResultScreen:React.FC<ResultScreenProps> = ({correctCount,totalQues
       {showBurst && <XPBurst amount={totalXP} onDone={()=>setShowBurst(false)} />}
 
       {tierUp && (
-        <div style={{background:"#2a1208",border:"0.5px solid #E85D24",borderRadius:10,padding:"12px 16px",marginBottom:14,display:"flex",alignItems:"center",gap:12}}>
+        <div style={{background:"var(--accent-tint)",border:"0.5px solid var(--accent)",borderRadius:10,padding:"12px 16px",marginBottom:14,display:"flex",alignItems:"center",gap:12}}>
           <span style={{fontSize:28}}>🎉</span>
           <div>
-            <p style={{fontSize:14,fontWeight:600,color:"#E85D24",margin:0}}>Tier up!</p>
-            <p style={{fontSize:13,color:"#888",margin:0}}>You reached <strong style={{color:"#f0f0f0"}}>{tier}</strong> tier</p>
+            <p style={{fontSize:14,fontWeight:600,color:"var(--accent)",margin:0}}>Tier up!</p>
+            <p style={{fontSize:13,color:"var(--text-muted)",margin:0}}>You reached <strong style={{color:"var(--text)"}}>{tier}</strong> tier</p>
           </div>
           <div style={{marginLeft:"auto"}}><TierBadge tier={tier} size="lg" showLabel animated /></div>
         </div>
@@ -41,41 +41,41 @@ export const ResultScreen:React.FC<ResultScreenProps> = ({correctCount,totalQues
           <div style={{textAlign:"left"}}>
             <p style={{fontSize:22,margin:0}}>{emoji}</p>
             <p style={{fontSize:18,fontWeight:500,margin:0,color:gColor}}>{gradeLabel(grade)}</p>
-            <p style={{fontSize:13,color:"#888",margin:0}}>{correctCount} / {totalQuestions} correct</p>
+            <p style={{fontSize:13,color:"var(--text-muted)",margin:0}}>{correctCount} / {totalQuestions} correct</p>
           </div>
         </div>
 
         {totalXP>0 && (
-          <div style={{background:"#1a1a1a",border:"0.5px solid #2e2e2e",borderRadius:8,padding:"12px 16px",marginBottom:16}}>
+          <div style={{background:"var(--bg-card)",border:"0.5px solid var(--border)",borderRadius:8,padding:"12px 16px",marginBottom:16}}>
             <div style={{display:"flex",justifyContent:"space-between",marginBottom:speedBonus>0?6:0}}>
-              <span style={{fontSize:13,color:"#888"}}>Base XP</span><span style={{fontSize:13,fontWeight:500}}>+{xpEarned}</span>
+              <span style={{fontSize:13,color:"var(--text-muted)"}}>Base XP</span><span style={{fontSize:13,fontWeight:500}}>+{xpEarned}</span>
             </div>
             {speedBonus>0 && (
               <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
-                <span style={{fontSize:13,color:"#e6b84a"}}>⚡ Speed bonus</span><span style={{fontSize:13,fontWeight:500,color:"#e6b84a"}}>+{speedBonus}</span>
+                <span style={{fontSize:13,color:"var(--gold)"}}>⚡ Speed bonus</span><span style={{fontSize:13,fontWeight:500,color:"var(--gold)"}}>+{speedBonus}</span>
               </div>
             )}
-            <div style={{display:"flex",justifyContent:"space-between",borderTop:"0.5px solid #2e2e2e",paddingTop:8,marginTop:4}}>
-              <span style={{fontSize:14,fontWeight:600,color:"#f0f0f0"}}>Total</span><span style={{fontSize:18,fontWeight:700,color:"#E85D24"}}>+{totalXP} XP</span>
+            <div style={{display:"flex",justifyContent:"space-between",borderTop:"0.5px solid var(--border)",paddingTop:8,marginTop:4}}>
+              <span style={{fontSize:14,fontWeight:600,color:"var(--text)"}}>Total</span><span style={{fontSize:18,fontWeight:700,color:"var(--accent)"}}>+{totalXP} XP</span>
             </div>
           </div>
         )}
 
         <div style={{marginBottom:16,textAlign:"left"}}>
           <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
-            <TierBadge tier={tier} size="sm" showLabel /><span style={{fontSize:12,color:"#888"}}>{newTotalXP.toLocaleString()} total XP</span>
+            <TierBadge tier={tier} size="sm" showLabel /><span style={{fontSize:12,color:"var(--text-muted)"}}>{newTotalXP.toLocaleString()} total XP</span>
           </div>
           <TierProgress xp={newTotalXP} />
         </div>
 
         <div style={{marginBottom:18,textAlign:"left"}}>
           {answers.map((a,i)=>(
-            <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 0",borderBottom:"0.5px solid #2e2e2e"}}>
-              <span style={{fontSize:12,color:a.is_correct?"#6fcf6f":"#ff7070",minWidth:14}}>{a.is_correct?"✓":"✗"}</span>
-              <span style={{fontSize:12,color:"#888"}}>Q{i+1} — {a.difficulty??"—"}</span>
-              {a.time_taken_s!=null && a.is_correct && a.time_taken_s<=10 && <span style={{fontSize:10,color:"#e6b84a",marginLeft:4}}>⚡ fast</span>}
-              {a.selected===-1 && <span style={{fontSize:11,color:"#ff7070",marginLeft:"auto"}}>Time expired</span>}
-              {a.time_taken_s!=null && a.selected!==-1 && <span style={{fontSize:11,color:"#555",marginLeft:"auto"}}>{a.time_taken_s}s</span>}
+            <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 0",borderBottom:"0.5px solid var(--border)"}}>
+              <span style={{fontSize:12,color:a.is_correct?"var(--good)":"var(--bad)",minWidth:14}}>{a.is_correct?"✓":"✗"}</span>
+              <span style={{fontSize:12,color:"var(--text-muted)"}}>Q{i+1} — {a.difficulty??"—"}</span>
+              {a.time_taken_s!=null && a.is_correct && a.time_taken_s<=10 && <span style={{fontSize:10,color:"var(--gold)",marginLeft:4}}>⚡ fast</span>}
+              {a.selected===-1 && <span style={{fontSize:11,color:"var(--bad)",marginLeft:"auto"}}>Time expired</span>}
+              {a.time_taken_s!=null && a.selected!==-1 && <span style={{fontSize:11,color:"var(--text-faint)",marginLeft:"auto"}}>{a.time_taken_s}s</span>}
             </div>
           ))}
         </div>

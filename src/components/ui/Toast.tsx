@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 export type ToastType="success"|"warning"|"error";
-const STYLES:Record<ToastType,{bg:string;border:string;color:string}>={ success:{bg:"#1a2e1a",border:"#2d5a2d",color:"#6fcf6f"}, warning:{bg:"#2a2010",border:"#5a4010",color:"#e6b84a"}, error:{bg:"#2e1a1a",border:"#5a2d2d",color:"#ff7070"} };
+const STYLES:Record<ToastType,{bg:string;border:string;color:string}>={ success:{bg:"var(--good-bg)",border:"var(--good-border)",color:"var(--good)"}, warning:{bg:"color-mix(in srgb, var(--gold) 14%, var(--bg))",border:"color-mix(in srgb, var(--gold) 35%, var(--bg))",color:"var(--gold)"}, error:{bg:"var(--bad-bg)",border:"var(--bad-border)",color:"var(--bad)"} };
 export const Toast:React.FC<{message:string;type?:ToastType;duration?:number;onDone?:()=>void}> = ({message,type="success",duration=3000,onDone}) => {
   const [visible,setVisible]=useState(true); const s=STYLES[type];
   useEffect(()=>{ const t=setTimeout(()=>{setVisible(false);onDone?.();},duration); return ()=>clearTimeout(t); },[duration,onDone]);

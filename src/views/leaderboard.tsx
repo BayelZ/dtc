@@ -15,37 +15,37 @@ export const LeaderboardPage:React.FC<{profile:Partial<Profile>|null;onViewProfi
   return (
     <div>
       <h1 style={{fontSize:22,fontWeight:500,margin:"0 0 4px"}}>Houston leaderboard</h1>
-      <p style={{fontSize:13,color:"#888",margin:"0 0 1.25rem"}}>Beta region · All-time</p>
+      <p style={{fontSize:13,color:"var(--text-muted)",margin:"0 0 1.25rem"}}>Beta region · All-time</p>
       <div style={{display:"flex",gap:8,marginBottom:"1.25rem"}}>
         {["All","Automotive","Diesel"].map(s=>(
-          <button key={s} onClick={()=>setFilter(s)} style={{padding:"6px 14px",fontSize:12,border:`0.5px solid ${filter===s?"#E85D24":"#2e2e2e"}`,borderRadius:6,background:filter===s?"#2a1a12":"#1a1a1a",color:filter===s?"#ff7a45":"#888",cursor:"pointer"}}>{s}</button>
+          <button key={s} onClick={()=>setFilter(s)} style={{padding:"6px 14px",fontSize:12,border:`0.5px solid ${filter===s?"var(--accent)":"var(--border)"}`,borderRadius:6,background:filter===s?"var(--accent-tint)":"var(--bg-card)",color:filter===s?"var(--accent-hi)":"var(--text-muted)",cursor:"pointer"}}>{s}</button>
         ))}
       </div>
       <Card>
-        <div className="lb-row" style={{gap:8,padding:"0 0 8px",borderBottom:"0.5px solid #2e2e2e",marginBottom:4}}>
-          {["#","Mechanic","Tier","Specialty","XP","Acc."].map(h=><span key={h} className={h==="Tier"||h==="Specialty"?"lb-col-hide-mobile":undefined} style={{fontSize:11,color:"#888",fontWeight:500}}>{h}</span>)}
+        <div className="lb-row" style={{gap:8,padding:"0 0 8px",borderBottom:"0.5px solid var(--border)",marginBottom:4}}>
+          {["#","Mechanic","Tier","Specialty","XP","Acc."].map(h=><span key={h} className={h==="Tier"||h==="Specialty"?"lb-col-hide-mobile":undefined} style={{fontSize:11,color:"var(--text-muted)",fontWeight:500}}>{h}</span>)}
         </div>
-        {loading && <p style={{color:"#888",padding:"1rem 0"}}>Loading…</p>}
+        {loading && <p style={{color:"var(--text-muted)",padding:"1rem 0"}}>Loading…</p>}
         {displayed.map(u=>{
           const isMe=u.id===profile?.id;
           return (
             <div key={u.id} onClick={()=>onViewProfile(u.id)} role="button" tabIndex={0} onKeyDown={e=>e.key==="Enter"&&onViewProfile(u.id)}
-              className="lb-row" style={{gap:8,borderBottom:"0.5px solid #2e2e2e",background:isMe?"#2a1a12":"transparent",margin:isMe?"0 -1.25rem":undefined,padding:isMe?"10px 1.25rem":"10px 0",alignItems:"center",cursor:"pointer"}}>
-              <span style={{fontSize:13,fontWeight:500,color:u.rank<=3?"#E85D24":"#888"}}>#{u.rank}</span>
+              className="lb-row" style={{gap:8,borderBottom:"0.5px solid var(--border)",background:isMe?"var(--accent-tint)":"transparent",margin:isMe?"0 -1.25rem":undefined,padding:isMe?"10px 1.25rem":"10px 0",alignItems:"center",cursor:"pointer"}}>
+              <span style={{fontSize:13,fontWeight:500,color:u.rank<=3?"var(--accent)":"var(--text-muted)"}}>#{u.rank}</span>
               <div style={{minWidth:0}}>
                 <p style={{fontSize:13,fontWeight:500,margin:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
                   {u.full_name}
                   {/* NO COMEBACKS stamp — deliberately the only blue element on the board */}
                   {u.no_comebacks&&<span title="Pile empty — no open comebacks" style={{fontSize:8,background:"#0C2740",color:"#E9EEF2",border:"1.5px solid #E9EEF2",padding:"1px 6px 2px",borderRadius:3,marginLeft:6,letterSpacing:".14em",fontWeight:800,verticalAlign:"1px"}}>NO COMEBACKS</span>}
-                  {isMe&&<span style={{fontSize:9,background:"#2a1a12",color:"#ff7a45",border:"0.5px solid #5a2e12",padding:"1px 5px",borderRadius:3,marginLeft:6}}>you</span>}
+                  {isMe&&<span style={{fontSize:9,background:"var(--accent-tint)",color:"var(--accent-hi)",border:"0.5px solid color-mix(in srgb, var(--accent) 35%, var(--bg))",padding:"1px 5px",borderRadius:3,marginLeft:6}}>you</span>}
                 </p>
-                <p style={{fontSize:11,color:"#888",margin:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{u.shop_name||"—"}</p>
+                <p style={{fontSize:11,color:"var(--text-muted)",margin:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{u.shop_name||"—"}</p>
                 <div className="lb-mobile-specialty" style={{marginTop:4}}><Badge label={u.specialty} variant="specialty" /></div>
               </div>
               <span className="lb-col-hide-mobile"><TierBadge tier={u.tier as Tier} size="sm" /></span>
               <span className="lb-col-hide-mobile"><Badge label={u.specialty} variant="specialty" /></span>
               <span style={{fontSize:13,fontWeight:500}}>{u.xp.toLocaleString()}</span>
-              <span style={{fontSize:13,color:u.accuracy_pct>=80?"#6fcf6f":u.accuracy_pct>=60?"#e6b84a":"#888"}}>{u.accuracy_pct}%</span>
+              <span style={{fontSize:13,color:u.accuracy_pct>=80?"var(--good)":u.accuracy_pct>=60?"var(--gold)":"var(--text-muted)"}}>{u.accuracy_pct}%</span>
             </div>
           );
         })}

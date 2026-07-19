@@ -33,16 +33,16 @@ export const ChallengeArena:React.FC<{challenge:Challenge;onBack:()=>void;onComp
 
   const Header = (
     <div style={{marginBottom:16}}>
-      <button onClick={onBack} style={{background:"none",border:"none",fontSize:13,color:"#888",cursor:"pointer",padding:"0 0 12px"}}>← Back to challenges</button>
-      <div style={{borderBottom:"0.5px solid #2e2e2e",paddingBottom:12}}>
-        <h2 style={{fontSize:18,fontWeight:500,margin:"0 0 4px",color:"#f0f0f0"}}>{challenge.title}</h2>
-        <p style={{fontSize:13,color:"#888",margin:0,lineHeight:1.5}}>{challenge.description}</p>
+      <button onClick={onBack} style={{background:"none",border:"none",fontSize:13,color:"var(--text-muted)",cursor:"pointer",padding:"0 0 12px"}}>← Back to challenges</button>
+      <div style={{borderBottom:"0.5px solid var(--border)",paddingBottom:12}}>
+        <h2 style={{fontSize:18,fontWeight:500,margin:"0 0 4px",color:"var(--text)"}}>{challenge.title}</h2>
+        <p style={{fontSize:13,color:"var(--text-muted)",margin:0,lineHeight:1.5}}>{challenge.description}</p>
       </div>
     </div>
   );
 
-  if (fetchErr||attempt.error) return <div style={{maxWidth:640,margin:"0 auto"}}>{Header}<p style={{textAlign:"center",color:"#ff7070",padding:"2rem"}}>{fetchErr??attempt.error}</p><button onClick={onBack} style={{display:"block",margin:"0 auto",background:"none",border:"none",color:"#888",cursor:"pointer",fontSize:13}}>← Go back</button></div>;
-  if (loadingQs||attempt.status==="idle"||attempt.status==="starting") return <div style={{maxWidth:640,margin:"0 auto"}}>{Header}<p style={{textAlign:"center",color:"#888",padding:"2rem"}}>Loading challenge…</p></div>;
+  if (fetchErr||attempt.error) return <div style={{maxWidth:640,margin:"0 auto"}}>{Header}<p style={{textAlign:"center",color:"var(--bad)",padding:"2rem"}}>{fetchErr??attempt.error}</p><button onClick={onBack} style={{display:"block",margin:"0 auto",background:"none",border:"none",color:"var(--text-muted)",cursor:"pointer",fontSize:13}}>← Go back</button></div>;
+  if (loadingQs||attempt.status==="idle"||attempt.status==="starting") return <div style={{maxWidth:640,margin:"0 auto"}}>{Header}<p style={{textAlign:"center",color:"var(--text-muted)",padding:"2rem"}}>Loading challenge…</p></div>;
 
   if (attempt.status==="done" && attempt.finishResult) {
     const fr = attempt.finishResult;
@@ -59,7 +59,7 @@ export const ChallengeArena:React.FC<{challenge:Challenge;onBack:()=>void;onComp
     );
   }
 
-  if (attempt.status==="finishing"||attempt.status==="done") return <div style={{maxWidth:640,margin:"0 auto"}}>{Header}<p style={{textAlign:"center",color:"#888",padding:"2rem"}}>Saving results…</p></div>;
+  if (attempt.status==="finishing"||attempt.status==="done") return <div style={{maxWidth:640,margin:"0 auto"}}>{Header}<p style={{textAlign:"center",color:"var(--text-muted)",padding:"2rem"}}>Saving results…</p></div>;
   if (!currentQ) return null;
 
   return (

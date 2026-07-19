@@ -57,16 +57,22 @@ export interface FinishAttemptResponse {
 }
 
 export const TIER_ICONS: Record<Tier,string> = { Bronze:"🥉", Silver:"🥈", Gold:"🥇", Platinum:"💎", Master:"👑" };
+// Metal colors fixed; bg/border tinted against the theme bg (see tierColors in utils.ts).
+const tierChipStyle = (metal:string) => ({
+  bg:`color-mix(in srgb, ${metal} 14%, var(--bg))`,
+  color:metal,
+  border:`color-mix(in srgb, ${metal} 45%, var(--bg))`,
+});
 export const TIER_COLORS: Record<Tier,{bg:string;color:string;border:string}> = {
-  Bronze:{bg:"#2a1a08",color:"#CD7F32",border:"#7a4a18"},
-  Silver:{bg:"#1e1e1e",color:"#A8A9AD",border:"#555"},
-  Gold:{bg:"#2a2008",color:"#EF9F27",border:"#7a5a18"},
-  Platinum:{bg:"#1a1a2e",color:"#8888cc",border:"#444488"},
-  Master:{bg:"#2a1208",color:"#E85D24",border:"#883318"},
+  Bronze:tierChipStyle("#CD7F32"),
+  Silver:tierChipStyle("#A8A9AD"),
+  Gold:tierChipStyle("#EF9F27"),
+  Platinum:tierChipStyle("#8888cc"),
+  Master:tierChipStyle("var(--accent)"),
 };
 export const GRADE_COLORS: Record<Grade,{color:string;label:string}> = {
-  A:{color:"#6fcf6f",label:"Excellent"}, B:{color:"#5aade6",label:"Good"},
-  C:{color:"#e6b84a",label:"Passing"}, F:{color:"#ff7070",label:"Failed"},
+  A:{color:"var(--good)",label:"Excellent"}, B:{color:"var(--info)",label:"Good"},
+  C:{color:"var(--gold)",label:"Passing"}, F:{color:"var(--bad)",label:"Failed"},
 };
 export const SKILL_DOMAIN_ICONS: Record<SkillDomain,string> = {
   Electrical:"⚡", Fuel:"🛢", Emissions:"💨", Drivetrain:"⚙️", Network:"🔗",

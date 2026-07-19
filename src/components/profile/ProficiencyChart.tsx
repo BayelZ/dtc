@@ -2,9 +2,8 @@ import React, { useState } from "react";
 import { Icon } from "@/components/ui/Icon";
 import type { ProficiencyStat } from "@/hooks/useProficiency";
 
-const PRIMARY = "#E85D24";
-const PRIMARY_DARK = "#ff7a45";
-const PRIMARY_RGB = "232,93,36";
+const PRIMARY = "var(--accent)";
+const PRIMARY_DARK = "var(--accent-hi)";
 
 type View = "radar"|"bars";
 
@@ -30,7 +29,7 @@ export const ProficiencyChart:React.FC<{stats:ProficiencyStat[]}> = ({stats}) =>
   const spokes=stats.map((_s,i)=>{
     const p=vertexFor(i,100);
     const isActive=hoverIdx===i;
-    return { x2:p.x, y2:p.y, color:isActive?PRIMARY:"#2e2e2e", width:isActive?1.5:0.5, opacity:isActive?0.9:0.5 };
+    return { x2:p.x, y2:p.y, color:isActive?PRIMARY:"var(--border)", width:isActive?1.5:0.5, opacity:isActive?0.9:0.5 };
   });
 
   const dataPts=stats.map((s,i)=>vertexFor(i,s.value));
@@ -55,10 +54,10 @@ export const ProficiencyChart:React.FC<{stats:ProficiencyStat[]}> = ({stats}) =>
     else { transform="translate(-50%,-50%)"; textAlign="center"; }
     return {
       lx, ly, transform, textAlign,
-      pillBg:isActive?`rgba(${PRIMARY_RGB},0.14)`:"transparent",
+      pillBg:isActive?"color-mix(in srgb, var(--accent) 14%, transparent)":"transparent",
       label:s.label, value:s.value,
-      labelColor:isActive?PRIMARY_DARK:"#999", labelWeight:isActive?700:500, labelSize:isActive?15:13,
-      valueColor:isActive?PRIMARY:"#666", valueSize:isActive?15:12,
+      labelColor:isActive?PRIMARY_DARK:"var(--text-muted)", labelWeight:isActive?700:500, labelSize:isActive?15:13,
+      valueColor:isActive?PRIMARY:"var(--text-faint)", valueSize:isActive?15:12,
       delay:`${0.75+i*0.05}s`,
     };
   });
@@ -67,8 +66,8 @@ export const ProficiencyChart:React.FC<{stats:ProficiencyStat[]}> = ({stats}) =>
     const isActive=hoverIdx===i;
     return {
       icon:s.icon, label:s.label, value:s.value,
-      textColor:isActive?PRIMARY_DARK:"#ccc", weight:isActive?700:500,
-      rowBg:isActive?`rgba(${PRIMARY_RGB},0.1)`:"transparent",
+      textColor:isActive?PRIMARY_DARK:"var(--text-dim)", weight:isActive?700:500,
+      rowBg:isActive?"color-mix(in srgb, var(--accent) 10%, transparent)":"transparent",
       delay:`${i*0.06}s`,
     };
   });
@@ -79,21 +78,21 @@ export const ProficiencyChart:React.FC<{stats:ProficiencyStat[]}> = ({stats}) =>
   const bottomStats=sortedStats.slice(-2).reverse();
 
   return (
-    <div style={{background:"#1a1a1a",border:"0.5px solid #2e2e2e",borderRadius:10,padding:"1.5rem",marginBottom:18}}>
+    <div style={{background:"var(--bg-card)",border:"0.5px solid var(--border)",borderRadius:10,padding:"1.5rem",marginBottom:18}}>
       <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:12,flexWrap:"wrap",marginBottom:16}}>
         <div>
           <p style={{fontSize:16,fontWeight:600,margin:"0 0 4px"}}>Technical Proficiency</p>
-          <p style={{fontSize:13,color:"#666",margin:0}}>Diagnostic skill assessment across core competencies</p>
+          <p style={{fontSize:13,color:"var(--text-faint)",margin:0}}>Diagnostic skill assessment across core competencies</p>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:14}}>
-          <div style={{display:"flex",gap:4,background:"#242424",borderRadius:6,padding:3}}>
+          <div style={{display:"flex",gap:4,background:"var(--bg-raised)",borderRadius:6,padding:3}}>
             {(["radar","bars"] as View[]).map(v=>(
-              <button key={v} onClick={()=>setView(v)} style={{padding:"5px 12px",fontSize:12,border:"none",borderRadius:5,background:view===v?"#1a1a1a":"none",color:view===v?"#f0f0f0":"#888",cursor:"pointer",textTransform:"capitalize"}}>{v}</button>
+              <button key={v} onClick={()=>setView(v)} style={{padding:"5px 12px",fontSize:12,border:"none",borderRadius:5,background:view===v?"var(--bg-card)":"none",color:view===v?"var(--text)":"var(--text-muted)",cursor:"pointer",textTransform:"capitalize"}}>{v}</button>
             ))}
           </div>
           <div style={{textAlign:"right",flexShrink:0}}>
             <div style={{fontSize:32,fontWeight:700,color:PRIMARY,lineHeight:1}}>{avgScore}</div>
-            <div style={{fontSize:10,letterSpacing:1,color:"#888",marginTop:3}}>OVERALL SCORE</div>
+            <div style={{fontSize:10,letterSpacing:1,color:"var(--text-muted)",marginTop:3}}>OVERALL SCORE</div>
           </div>
         </div>
       </div>
@@ -115,7 +114,7 @@ export const ProficiencyChart:React.FC<{stats:ProficiencyStat[]}> = ({stats}) =>
               <circle cx={180} cy={180} r={96} fill="url(#octoBg)" />
 
               {gridRings.map((ring,i)=>(
-                <polygon key={i} points={ring.points} fill="none" stroke="#3a3a3a" strokeWidth={1} opacity={0.55} style={{animation:"ringFade 0.6s ease-out both",animationDelay:ring.delay}} />
+                <polygon key={i} points={ring.points} fill="none" stroke="var(--border)" strokeWidth={1} opacity={0.55} style={{animation:"ringFade 0.6s ease-out both",animationDelay:ring.delay}} />
               ))}
               {spokes.map((spoke,i)=>(
                 <line key={i} x1={180} y1={180} x2={spoke.x2} y2={spoke.y2} stroke={spoke.color} strokeWidth={spoke.width} opacity={spoke.opacity} style={{transition:"all 0.15s ease"}} />
@@ -124,7 +123,7 @@ export const ProficiencyChart:React.FC<{stats:ProficiencyStat[]}> = ({stats}) =>
               <g style={{transformOrigin:"180px 180px",animation:"octoGrow 0.8s cubic-bezier(.2,1,.3,1) both",animationDelay:"0.15s"}}>
                 <polygon points={dataPolygonPoints} fill={PRIMARY} fillOpacity={0.16} stroke={PRIMARY} strokeWidth={2} />
                 {statDots.map((dot,i)=>(
-                  <circle key={i} cx={dot.cx} cy={dot.cy} r={dot.r} fill={PRIMARY} stroke="#0f0f0f" strokeWidth={1.5} opacity={dot.opacity} filter={dot.active?"url(#dotGlow)":undefined}
+                  <circle key={i} cx={dot.cx} cy={dot.cy} r={dot.r} fill={PRIMARY} stroke="var(--bg)" strokeWidth={1.5} opacity={dot.opacity} filter={dot.active?"url(#dotGlow)":undefined}
                     style={{cursor:"pointer",transformBox:"fill-box",transformOrigin:"center",animation:"dotPop 0.45s ease-out both",animationDelay:dot.delay,transition:"r 0.15s ease"}}
                     onMouseEnter={()=>setHoverIdx(i)} onMouseLeave={()=>setHoverIdx(null)} />
                 ))}
@@ -148,7 +147,7 @@ export const ProficiencyChart:React.FC<{stats:ProficiencyStat[]}> = ({stats}) =>
                   <span style={{fontSize:13,fontWeight:bar.weight,color:bar.textColor,flex:1,transition:"all 0.15s ease"}}>{bar.label}</span>
                   <span style={{fontSize:13,fontWeight:700,color:bar.textColor}}>{bar.value}</span>
                 </div>
-                <div style={{height:6,background:"#242424",borderRadius:3,overflow:"hidden"}}>
+                <div style={{height:6,background:"var(--bg-raised)",borderRadius:3,overflow:"hidden"}}>
                   <div style={{height:"100%",width:`${bar.value}%`,background:PRIMARY,borderRadius:3,animation:"barGrow 0.8s ease-out both",animationDelay:bar.delay}} />
                 </div>
               </div>
@@ -158,34 +157,34 @@ export const ProficiencyChart:React.FC<{stats:ProficiencyStat[]}> = ({stats}) =>
 
         <div style={{flex:1,minWidth:220,display:"flex",flexDirection:"column",gap:18}}>
           <div>
-            <p style={{fontSize:12,fontWeight:600,color:"#6fcf6f",letterSpacing:0.5,textTransform:"uppercase",margin:"0 0 10px",display:"flex",alignItems:"center",gap:6}}>
-              <Icon icon="trending" size={14} color="#6fcf6f" strokeWidth={2.2} /> Strengths
+            <p style={{fontSize:12,fontWeight:600,color:"var(--good)",letterSpacing:0.5,textTransform:"uppercase",margin:"0 0 10px",display:"flex",alignItems:"center",gap:6}}>
+              <Icon icon="trending" size={14} color="var(--good)" strokeWidth={2.2} /> Strengths
             </p>
             <div style={{display:"flex",flexDirection:"column",gap:8}}>
               {topStats.map(s=>(
                 <div key={s.label} style={{display:"flex",alignItems:"center",gap:10}}>
-                  <Icon icon={s.icon} size={16} color="#6fcf6f" strokeWidth={2} />
-                  <span style={{fontSize:13,color:"#ccc"}}>{s.label}</span>
-                  <span style={{fontSize:13,fontWeight:700,color:"#6fcf6f"}}>{s.value}</span>
-                  <div style={{flex:1,height:4,background:"#242424",borderRadius:2,overflow:"hidden"}}>
-                    <div style={{height:"100%",width:`${s.value}%`,background:"#6fcf6f",borderRadius:2}} />
+                  <Icon icon={s.icon} size={16} color="var(--good)" strokeWidth={2} />
+                  <span style={{fontSize:13,color:"var(--text-dim)"}}>{s.label}</span>
+                  <span style={{fontSize:13,fontWeight:700,color:"var(--good)"}}>{s.value}</span>
+                  <div style={{flex:1,height:4,background:"var(--bg-raised)",borderRadius:2,overflow:"hidden"}}>
+                    <div style={{height:"100%",width:`${s.value}%`,background:"var(--good)",borderRadius:2}} />
                   </div>
                 </div>
               ))}
             </div>
           </div>
           <div>
-            <p style={{fontSize:12,fontWeight:600,color:"#ff8a6b",letterSpacing:0.5,textTransform:"uppercase",margin:"0 0 10px",display:"flex",alignItems:"center",gap:6}}>
-              <Icon icon="target" size={14} color="#ff8a6b" strokeWidth={2.2} /> Needs Work
+            <p style={{fontSize:12,fontWeight:600,color:"var(--accent-soft)",letterSpacing:0.5,textTransform:"uppercase",margin:"0 0 10px",display:"flex",alignItems:"center",gap:6}}>
+              <Icon icon="target" size={14} color="var(--accent-soft)" strokeWidth={2.2} /> Needs Work
             </p>
             <div style={{display:"flex",flexDirection:"column",gap:8}}>
               {bottomStats.map(s=>(
                 <div key={s.label} style={{display:"flex",alignItems:"center",gap:10}}>
-                  <Icon icon={s.icon} size={16} color="#ff8a6b" strokeWidth={2} />
-                  <span style={{fontSize:13,color:"#ccc"}}>{s.label}</span>
-                  <span style={{fontSize:13,fontWeight:700,color:"#ff8a6b"}}>{s.value}</span>
-                  <div style={{flex:1,height:4,background:"#242424",borderRadius:2,overflow:"hidden"}}>
-                    <div style={{height:"100%",width:`${s.value}%`,background:"#ff8a6b",borderRadius:2}} />
+                  <Icon icon={s.icon} size={16} color="var(--accent-soft)" strokeWidth={2} />
+                  <span style={{fontSize:13,color:"var(--text-dim)"}}>{s.label}</span>
+                  <span style={{fontSize:13,fontWeight:700,color:"var(--accent-soft)"}}>{s.value}</span>
+                  <div style={{flex:1,height:4,background:"var(--bg-raised)",borderRadius:2,overflow:"hidden"}}>
+                    <div style={{height:"100%",width:`${s.value}%`,background:"var(--accent-soft)",borderRadius:2}} />
                   </div>
                 </div>
               ))}
