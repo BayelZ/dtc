@@ -1,0 +1,256 @@
+{
+  "id": "shudder-at-forty-five",
+  "title": "The Shudder at 45",
+  "vehicle": { "year": 2015, "make": "Ford", "model": "F-150", "engine": "3.5L EcoBoost" },
+  "complaintTemplate": "CUST STATES: around 40-50 mph on light throttle it feels like driving over rumble strips for a few seconds. Goes away if I get on it or if I drop a gear. Smooth everywhere else. Another shop said the transmission is going and quoted a rebuild.",
+  "faultSeeds": [
+    {
+      "id": "seed_tcc",
+      "internalNote": "The classic. Torque-converter clutch shudder on apply — degraded fluid, friction material no longer grabbing cleanly. Tracks converter lockup, not road speed. Correct fix: fluid exchange with the correct spec fluid plus a relearn — NOT a rebuild. Confirming test: act_roadtest_log (TCC slip oscillating while the shudder is felt).",
+      "activeFaults": [
+        { "id": "tcc", "label": "torque-converter clutch shuddering on apply from degraded fluid", "revealedBy": "act_roadtest_log" }
+      ],
+      "resultOverrides": {
+        "act_roadtest_log": "Between 43 and 48 mph on light throttle, TCC slip speed oscillates a few hundred RPM in time with the shudder, then settles when it fully locks. Misfire counters stay at zero throughout.",
+        "act_speed_vs_rpm": "Holding the same road speed in a lower gear, the converter unlocks and the shudder disappears entirely. It follows converter lockup, not road speed.",
+        "act_misfire_data": "No misfire counts on any cylinder, loaded or unloaded.",
+        "act_fluid_check": "The fluid is dark and smells scorched, and there's no record of it ever being serviced.",
+        "act_tire_balance": "All four wheels balance within spec. The shudder is completely unchanged afterward."
+      }
+    },
+    {
+      "id": "seed_misfire",
+      "internalNote": "The engine problem wearing a transmission costume. A coil breaking down under load misfires only when cylinder pressure is high — light-throttle cruise at 45 is exactly that load. Feels identical to a shudder from the driver's seat. Correct fix: coil (and plug) on the affected cylinder. Confirming test: act_misfire_data.",
+      "activeFaults": [
+        { "id": "misfire", "label": "cylinder 5 coil breaking down under load", "revealedBy": "act_misfire_data" }
+      ],
+      "resultOverrides": {
+        "act_roadtest_log": "The shudder is there at 45 on light throttle, but TCC slip holds within a few RPM the whole time. Something else is shaking it.",
+        "act_speed_vs_rpm": "The shudder follows engine load and RPM — it shows up in any gear that puts the engine under the same load, at whatever road speed that happens to be.",
+        "act_misfire_data": "Cylinder 5 accumulates misfire counts every time it's under load at cruise, with a pending misfire code stored for that cylinder. The counts stop at idle.",
+        "act_fluid_check": "The transmission fluid is clean, at the correct level, with no burnt smell.",
+        "act_tire_balance": "All four balance within spec and nothing changes."
+      }
+    },
+    {
+      "id": "seed_driveshaft",
+      "internalNote": "The one that isn't the powertrain at all. A worn driveshaft center-support bearing puts in a vibration tied purely to road speed — same at 45 mph in any gear. Correct fix: center-support bearing / driveshaft service. Confirming test: act_speed_vs_rpm (identical at the same road speed regardless of gear).",
+      "activeFaults": [
+        { "id": "driveshaft", "label": "worn driveshaft center-support bearing", "revealedBy": "act_speed_vs_rpm" }
+      ],
+      "resultOverrides": {
+        "act_roadtest_log": "The vibration is present at 45 mph, but TCC slip is steady and no misfire counts accumulate. The scan data looks unremarkable.",
+        "act_speed_vs_rpm": "At the same road speed in a different gear the vibration is exactly the same. Change the road speed and it changes. It tracks road speed, not engine RPM.",
+        "act_misfire_data": "No misfire counts on any cylinder.",
+        "act_fluid_check": "Transmission fluid looks and smells normal.",
+        "act_tire_balance": "All four balance within spec, and the vibration is unchanged."
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "id": "intake",
+      "type": "intake",
+      "prompt": "A rumble-strip shudder in a narrow speed band on light throttle, and somebody has already quoted a transmission rebuild. Where do you start?",
+      "options": [
+        { "label": "Road-test it with the scan tool logging TCC slip and misfire counts", "targetNodeId": "q_tcc_what", "scoreWeight": 3 },
+        { "label": "Road-test it to isolate whether it follows RPM or road speed", "targetNodeId": "q_discriminator", "scoreWeight": 3 },
+        { "label": "Pull it in and start a full workup", "targetNodeId": "bay", "scoreWeight": 1 },
+        { "label": "Shudder at cruise on a truck this age — quote the rebuild", "targetNodeId": "repair_rebuild", "scoreWeight": -5 }
+      ]
+    },
+    {
+      "id": "bay",
+      "type": "action",
+      "prompt": "Truck's yours. What's your move?",
+      "timeCost": 0,
+      "options": [
+        { "label": "Road-test with scan data on TCC slip and misfire counters", "targetNodeId": "q_tcc_what", "scoreWeight": 3 },
+        { "label": "Road-test holding speed across gears to isolate RPM vs road speed", "targetNodeId": "q_discriminator", "scoreWeight": 3 },
+        { "label": "Check misfire counters cylinder by cylinder under load", "targetNodeId": "q_misfire_load", "scoreWeight": 2 },
+        { "label": "Inspect the transmission fluid condition and level", "targetNodeId": "act_fluid_check", "scoreWeight": 2 },
+        { "label": "Balance and rotate the tires and see if it goes away", "targetNodeId": "act_tire_balance", "scoreWeight": -2 },
+        { "label": "I'm ready to commit to a root cause", "targetNodeId": "decision", "scoreWeight": 0 }
+      ]
+    },
+    {
+      "id": "q_tcc_what",
+      "type": "quiz",
+      "prompt": "A torque-converter clutch shudder is —",
+      "explanation": "The TCC is a friction clutch locking the engine directly to the transmission. When the fluid or friction material degrades, it grabs and slips repeatedly on apply instead of locking cleanly — felt as a rumble-strip shudder in the lockup speed band.",
+      "options": [
+        { "label": "the clutch slipping and grabbing as it tries to lock up", "targetNodeId": "act_roadtest_log", "scoreWeight": 0, "correct": true },
+        { "label": "the converter stator freewheeling at highway speed", "targetNodeId": "act_roadtest_log", "scoreWeight": 0 },
+        { "label": "the planetary gearset skipping under light throttle", "targetNodeId": "act_roadtest_log", "scoreWeight": 0 },
+        { "label": "the fluid pump cavitating because the level is low", "targetNodeId": "act_roadtest_log", "scoreWeight": 0 }
+      ]
+    },
+    {
+      "id": "act_roadtest_log",
+      "type": "action",
+      "prompt": "You road-test it with the scan tool logging TCC slip speed, misfire counters, engine load and vehicle speed, and reproduce the shudder in its speed band.",
+      "timeCost": 20,
+      "options": [
+        { "label": "Log it and isolate RPM versus road speed", "targetNodeId": "q_discriminator", "scoreWeight": 2 },
+        { "label": "Log it and check the fluid condition", "targetNodeId": "act_fluid_check", "scoreWeight": 2 },
+        { "label": "Log it and commit", "targetNodeId": "decision", "scoreWeight": 1 }
+      ]
+    },
+    {
+      "id": "q_discriminator",
+      "type": "quiz",
+      "prompt": "It shudders at 45 mph. Which move tells you whether it follows engine speed or road speed?",
+      "explanation": "Same road speed, different gear: road speed is held constant while RPM and lockup state change. If the shudder moves with the gear it's engine or converter related; if it stays put at that road speed, it's in the driveline or wheels.",
+      "options": [
+        { "label": "Balance the tires and then road-test it again", "targetNodeId": "act_speed_vs_rpm", "scoreWeight": 0 },
+        { "label": "Watch whether it changes when the A/C compressor cycles on", "targetNodeId": "act_speed_vs_rpm", "scoreWeight": 0 },
+        { "label": "Check the driveline and carrier bearing for play up on a lift", "targetNodeId": "act_speed_vs_rpm", "scoreWeight": 0 },
+        { "label": "Hold the same speed in a lower gear — RPM changes, speed doesn't", "targetNodeId": "act_speed_vs_rpm", "scoreWeight": 0, "correct": true }
+      ]
+    },
+    {
+      "id": "act_speed_vs_rpm",
+      "type": "action",
+      "prompt": "You hold the same road speed in different gears, then vary road speed at the same RPM, feeling for what the shudder actually tracks.",
+      "timeCost": 10,
+      "options": [
+        { "label": "Log it and road-test with scan data", "targetNodeId": "q_tcc_what", "scoreWeight": 2 },
+        { "label": "Log it and check misfire counters under load", "targetNodeId": "q_misfire_load", "scoreWeight": 2 },
+        { "label": "Log it and commit", "targetNodeId": "decision", "scoreWeight": 1 }
+      ]
+    },
+    {
+      "id": "q_misfire_load",
+      "type": "quiz",
+      "prompt": "Why might a failing coil misfire only under load?",
+      "explanation": "Higher cylinder pressure raises the voltage needed to jump the plug gap. A weak coil makes enough voltage at idle and runs out of margin under load — which is why it only misfires where the engine is working.",
+      "options": [
+        { "label": "Cold injectors flow less fuel at higher engine speed", "targetNodeId": "act_misfire_data", "scoreWeight": 0 },
+        { "label": "Exhaust backpressure rises and quenches the spark", "targetNodeId": "act_misfire_data", "scoreWeight": 0 },
+        { "label": "Cylinder pressure rises, so the spark needs more voltage", "targetNodeId": "act_misfire_data", "scoreWeight": 0, "correct": true },
+        { "label": "The knock sensor retards timing until the misfire clears", "targetNodeId": "act_misfire_data", "scoreWeight": 0 }
+      ]
+    },
+    {
+      "id": "act_misfire_data",
+      "type": "action",
+      "prompt": "You watch misfire counters cylinder by cylinder while holding the truck at cruise load, and check for pending codes afterward.",
+      "timeCost": 10,
+      "options": [
+        { "label": "Log it and road-test with full scan data", "targetNodeId": "q_tcc_what", "scoreWeight": 2 },
+        { "label": "Log it and commit", "targetNodeId": "decision", "scoreWeight": 1 }
+      ]
+    },
+    {
+      "id": "act_fluid_check",
+      "type": "action",
+      "prompt": "You check the transmission fluid level, colour and smell, and look for any service history on it.",
+      "timeCost": 8,
+      "options": [
+        { "label": "Log it and road-test with scan data", "targetNodeId": "q_tcc_what", "scoreWeight": 2 },
+        { "label": "Log it and commit", "targetNodeId": "decision", "scoreWeight": 1 }
+      ]
+    },
+    {
+      "id": "act_tire_balance",
+      "type": "action",
+      "prompt": "You pull all four wheels, balance them, rotate them and road-test it again.",
+      "timeCost": 25,
+      "nextNodeId": "bay",
+      "continueLabel": "That didn't touch it — back to the workup"
+    },
+    {
+      "id": "decision",
+      "type": "decision",
+      "prompt": "Commit to a specific root cause. There's a transmission rebuild quote sitting on the counter next to yours.",
+      "options": [
+        { "label": "It's TCC shudder — correct-spec fluid exchange and relearn", "targetNodeId": "repair_fluid", "commitsTo": "tcc", "scoreWeight": 6 },
+        { "label": "It's a misfire under load — coil and plug on that cylinder", "targetNodeId": "repair_coil", "commitsTo": "misfire", "scoreWeight": 6 },
+        { "label": "It's the driveshaft center-support bearing — replace it", "targetNodeId": "repair_driveshaft", "commitsTo": "driveshaft", "scoreWeight": 6 },
+        { "label": "The other shop's right — sell the transmission rebuild", "targetNodeId": "repair_rebuild", "scoreWeight": -4 },
+        { "label": "Couldn't duplicate anything conclusive — send it back out", "targetNodeId": "repair_return", "scoreWeight": -3 }
+      ]
+    },
+    {
+      "id": "repair_fluid",
+      "type": "repair",
+      "prompt": "You do a full fluid exchange with the correct-spec fluid and run the TCC adaptive relearn.",
+      "timeCost": 0,
+      "repairs": ["tcc"],
+      "nextNodeId": "verify",
+      "continueLabel": "Button it up"
+    },
+    {
+      "id": "repair_coil",
+      "type": "repair",
+      "prompt": "You replace the coil and plug on the affected cylinder and clear the misfire history.",
+      "timeCost": 0,
+      "repairs": ["misfire"],
+      "nextNodeId": "verify",
+      "continueLabel": "Button it up"
+    },
+    {
+      "id": "repair_driveshaft",
+      "type": "repair",
+      "prompt": "You replace the driveshaft center-support bearing and re-index the shaft on reassembly.",
+      "timeCost": 0,
+      "repairs": ["driveshaft"],
+      "nextNodeId": "verify",
+      "continueLabel": "Button it up"
+    },
+    {
+      "id": "repair_rebuild",
+      "type": "repair",
+      "prompt": "You send it out for a transmission rebuild — several thousand dollars and most of a week. It comes back with a reman converter in it.",
+      "timeCost": 0,
+      "repairs": ["tcc"],
+      "nextNodeId": "verify",
+      "continueLabel": "Get it back from the builder"
+    },
+    {
+      "id": "repair_return",
+      "type": "repair",
+      "prompt": "You write 'could not duplicate' on the ticket and hand back the keys.",
+      "timeCost": 0,
+      "repairs": [],
+      "nextNodeId": "#resolve",
+      "continueLabel": "Hand back the keys"
+    },
+    {
+      "id": "verify",
+      "type": "action",
+      "prompt": "Before it goes back — how do you confirm the shudder is actually gone?",
+      "timeCost": 0,
+      "options": [
+        { "label": "Road-test the same speed band and load that produced it", "targetNodeId": "act_verify_roadtest", "scoreWeight": 2 },
+        { "label": "It's smooth pulling out of the bay — release it", "targetNodeId": "#resolve", "scoreWeight": -3 }
+      ]
+    },
+    {
+      "id": "act_verify_roadtest",
+      "type": "action",
+      "prompt": "You road-test it through the exact speed band and throttle position the customer described, with the scan tool still logging.",
+      "timeCost": 15,
+      "nextNodeId": "#resolve",
+      "continueLabel": "Release the vehicle"
+    },
+    {
+      "id": "out_good",
+      "type": "outcome",
+      "condition": "all-faults-repaired",
+      "prompt": "It runs through the whole 40-50 band on light throttle dead smooth, in every gear, repeatedly. You proved what it tracked before you spent the customer's money."
+    },
+    {
+      "id": "out_comeback",
+      "type": "outcome",
+      "condition": "faults-remain",
+      "prompt": "It's back on the schedule with the same rumble at the same speed. Whatever was actually shaking it is still there."
+    }
+  ],
+  "scoringRules": {
+    "decisionNodeWeight": 5,
+    "pathEfficiencyWeight": 2,
+    "repairSelectionWeight": 3,
+    "timeBudgetMinutes": 80
+  }
+}

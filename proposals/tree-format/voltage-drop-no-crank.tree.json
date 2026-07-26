@@ -1,0 +1,291 @@
+{
+  "id": "voltage-drop-no-crank",
+  "title": "Voltage Drop — Starter No-Crank (tree pilot)",
+  "vehicle": {
+    "year": 2019,
+    "make": "Chevrolet",
+    "model": "Silverado 1500",
+    "engine": "5.3L V8"
+  },
+  "complaintTemplate": "CUST STATES: truck cranks slow, sometimes just clicks / won't crank at all. Started after it sat ~3 wks over the holidays. Says a parts store 'tested the battery good.' Wants it sorted before the weekend.",
+  "faultSeeds": [
+    {
+      "id": "seed_pos_ground",
+      "internalNote": "Dual fault. Primary: corroded B+ cable end at the starter (~0.8V drop). Secondary: corroded engine-to-frame ground strap (~0.35V drop). Battery marginal (78% CCA) from the 3-week sit. Fixing only the positive side passes the bench test but the strap drags it back within days. Correct play: drop-test BOTH paths, fix both, address the battery, verify.",
+      "activeFaults": [
+        {
+          "id": "pos_feed",
+          "label": "corroded B+ cable end on the positive feed",
+          "revealedBy": "act_vdrop_pos"
+        },
+        {
+          "id": "ground_strap",
+          "label": "corroded engine-to-frame ground strap",
+          "revealedBy": "act_vdrop_gnd"
+        }
+      ],
+      "resultOverrides": {
+        "act_battery_load": "78% of rated CCA — marginal from sitting, but it'll still spin a healthy circuit. Flag it; don't stop here.",
+        "act_vdrop_pos": "0.82V, battery+ post to starter B+ stud, during crank (spec <0.2V). The B+ cable end at the starter is green and swollen.",
+        "act_vdrop_gnd": "0.34V, battery- to engine block, during crank (spec <0.2V). The engine-to-frame ground strap is corroded and shifts when you pry it.",
+        "act_ohm_static": "Both cables read ~0.3 ohm cold — looks 'fine.' Static ohms never loaded the joint, so this tells you almost nothing.",
+        "out_good": "Both drops now under 0.1V — B+ end and the ground strap cleaned/replaced, marginal battery swapped. Several cold cranks, fast every time. Fixed right.",
+        "out_comeback": "Fast crank on the hoist. Three days later it's towed back — you cleared the positive-side drop but left the corroded ground strap flexing. Textbook comeback."
+      }
+    },
+    {
+      "id": "seed_ground_primary",
+      "internalNote": "Single dominant fault on the GROUND path (corroded engine-to-frame strap, ~0.7V). Positive side in spec. Battery healthy. Punishes the 'it's always the positive cable' reflex — the reading, not the habit, points the way.",
+      "activeFaults": [
+        {
+          "id": "ground_strap",
+          "label": "corroded engine-to-frame ground strap",
+          "revealedBy": "act_vdrop_gnd"
+        }
+      ],
+      "resultOverrides": {
+        "act_battery_load": "91% of rated CCA — battery's healthy. Not your fault.",
+        "act_vdrop_pos": "0.11V on the positive feed during crank (spec <0.2V) — the positive side is clean.",
+        "act_vdrop_gnd": "0.71V, battery- to engine block, during crank (spec <0.2V). The engine-to-frame ground strap is the whole problem.",
+        "act_ohm_static": "Cables read near zero cold. Nothing here — static ohms miss a loaded ground just like a loaded feed.",
+        "out_good": "Ground strap replaced, ground drop now 0.04V, positive still 0.11V. Multiple cold cranks, fast. Done.",
+        "out_comeback": "You 'repaired' a positive side that was never out of spec — the truck cranks exactly as slow as before, because the bad ground strap is untouched."
+      }
+    },
+    {
+      "id": "seed_battery_dominant",
+      "internalNote": "Failing battery is the dominant cause (61% CCA, sulfated from sitting), with a minor loose/corroded positive terminal as a contributor. Correct call is BOTH: replace the battery and clean the terminal, then verify — not one or the other. Rewards load-testing the battery early.",
+      "activeFaults": [
+        {
+          "id": "battery",
+          "label": "failing battery (61% CCA)",
+          "revealedBy": "act_battery_load"
+        },
+        {
+          "id": "pos_terminal",
+          "label": "loose/corroded positive terminal",
+          "revealedBy": "act_vdrop_pos"
+        }
+      ],
+      "resultOverrides": {
+        "act_battery_load": "61% of rated CCA and it sags to 8.9V under the load — this battery is done, and the 3-week sit finished it.",
+        "act_vdrop_pos": "0.27V on the positive feed during crank — a touch high; the positive terminal clamp is loose and lightly corroded.",
+        "act_vdrop_gnd": "0.08V on the ground path during crank — in spec.",
+        "act_ohm_static": "Cables ohm fine cold. As always, that misses the loaded terminal.",
+        "out_good": "New battery, positive clamp cleaned and torqued, both drops under 0.1V. Several cold cranks, fast. Root cause and contributor both handled.",
+        "out_comeback": "You cleaned one connection and released it on the old battery — slow crank again by the next cold morning. The dead battery was the main event."
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "id": "intake",
+      "type": "intake",
+      "prompt": "CUST STATES: cranks slow, sometimes won't crank — started after the truck sat about 3 weeks. Parts store 'tested the battery good.' Resting voltage at the post reads 12.6V. Where do you start?",
+      "options": [
+        {
+          "label": "Confirm the no-crank, then load-test the battery before touching wiring",
+          "targetNodeId": "act_battery_load",
+          "scoreWeight": 2
+        },
+        {
+          "label": "Go straight to voltage-drop testing under cranking load",
+          "targetNodeId": "bay",
+          "scoreWeight": 1
+        },
+        {
+          "label": "Ohm the battery cables end-to-end with the battery disconnected",
+          "targetNodeId": "act_ohm_static",
+          "scoreWeight": -2
+        },
+        {
+          "label": "It cranked fine last month — just throw a starter at it",
+          "targetNodeId": "act_replace_starter",
+          "scoreWeight": -5
+        }
+      ]
+    },
+    {
+      "id": "bay",
+      "type": "action",
+      "prompt": "Back at the truck. What's your next move?",
+      "timeCost": 0,
+      "options": [
+        {
+          "label": "Voltage-drop the positive feed (batt+ to starter B+) under crank",
+          "targetNodeId": "act_vdrop_pos",
+          "scoreWeight": 3
+        },
+        {
+          "label": "Voltage-drop the ground path (batt- to engine/case) under crank",
+          "targetNodeId": "act_vdrop_gnd",
+          "scoreWeight": 3
+        },
+        {
+          "label": "Put the battery on a load test",
+          "targetNodeId": "act_battery_load",
+          "scoreWeight": 1
+        },
+        {
+          "label": "Ohm the cables end-to-end, key off",
+          "targetNodeId": "act_ohm_static",
+          "scoreWeight": -2
+        },
+        {
+          "label": "R&R the starter on suspicion",
+          "targetNodeId": "act_replace_starter",
+          "scoreWeight": -5
+        },
+        {
+          "label": "I'm ready to commit to a root cause",
+          "targetNodeId": "decision",
+          "scoreWeight": 0
+        }
+      ]
+    },
+    {
+      "id": "act_battery_load",
+      "type": "action",
+      "prompt": "You put the battery on a conductance / carbon-pile load test.",
+      "timeCost": 10,
+      "options": [
+        {
+          "label": "Log the CCA result and keep testing the circuit",
+          "targetNodeId": "bay",
+          "scoreWeight": 1
+        },
+        {
+          "label": "Battery's the whole story — replace it and release",
+          "targetNodeId": "out_early_release",
+          "scoreWeight": -2
+        }
+      ]
+    },
+    {
+      "id": "act_vdrop_pos",
+      "type": "action",
+      "prompt": "You back-probe from the battery positive post to the starter B+ stud and crank, watching the DVOM for voltage drop.",
+      "timeCost": 12,
+      "options": [
+        {
+          "label": "Log it and voltage-drop the ground path too before deciding",
+          "targetNodeId": "bay",
+          "scoreWeight": 2
+        },
+        {
+          "label": "Positive side's the fault — I'm ready to commit",
+          "targetNodeId": "decision",
+          "scoreWeight": 1
+        }
+      ]
+    },
+    {
+      "id": "act_vdrop_gnd",
+      "type": "action",
+      "prompt": "You back-probe from the battery negative post to the engine block / starter case and crank, watching the ground path for voltage drop.",
+      "timeCost": 12,
+      "options": [
+        {
+          "label": "Log it and voltage-drop the positive path too before deciding",
+          "targetNodeId": "bay",
+          "scoreWeight": 2
+        },
+        {
+          "label": "Ground side's the fault — I'm ready to commit",
+          "targetNodeId": "decision",
+          "scoreWeight": 1
+        }
+      ]
+    },
+    {
+      "id": "act_ohm_static",
+      "type": "action",
+      "prompt": "Battery disconnected, key off, you ohm each cable end-to-end with the DVOM.",
+      "timeCost": 10,
+      "nextNodeId": "bay",
+      "continueLabel": "Reads fine cold — but I never loaded the joint. Back to the truck."
+    },
+    {
+      "id": "act_replace_starter",
+      "type": "action",
+      "prompt": "You R&R the starter on suspicion and try again.",
+      "timeCost": 90,
+      "nextNodeId": "bay",
+      "continueLabel": "Still cranks slow — that wasn't it. Back to diagnosis."
+    },
+    {
+      "id": "decision",
+      "type": "decision",
+      "prompt": "Before you pull any more parts — commit. Based on your under-load readings, what's the root cause?",
+      "options": [
+        {
+          "label": "Repair every out-of-spec connection the readings flag — positive feed AND ground path — then re-drop both and cold-crank before release",
+          "targetNodeId": "repair_fix_and_verify",
+          "scoreWeight": 6
+        },
+        {
+          "label": "Fix the first out-of-spec reading I found and release",
+          "targetNodeId": "repair_partial",
+          "scoreWeight": 1
+        },
+        {
+          "label": "Rest voltage was 12.6V, so skip the battery load test and just repair the connection",
+          "targetNodeId": "repair_partial",
+          "scoreWeight": -2
+        },
+        {
+          "label": "Starter's dragging — condemn the starter",
+          "targetNodeId": "out_starter_wrong",
+          "scoreWeight": -5
+        }
+      ]
+    },
+    {
+      "id": "repair_fix_and_verify",
+      "type": "repair",
+      "prompt": "You clean/replace every connection your readings flagged, address the battery if it's marginal, then re-run voltage drop on BOTH paths under crank and do several cold-crank cycles.",
+      "timeCost": 35,
+      "nextNodeId": "#resolve",
+      "continueLabel": "Re-test under crank and release",
+      "repairScope": "all-revealed"
+    },
+    {
+      "id": "repair_partial",
+      "type": "repair",
+      "prompt": "You repair the one connection you flagged and hand the truck back.",
+      "timeCost": 25,
+      "nextNodeId": "#resolve",
+      "continueLabel": "Release the truck",
+      "repairScope": "first-revealed"
+    },
+    {
+      "id": "out_good",
+      "type": "outcome",
+      "prompt": "Fixed and verified — both paths in spec under load, confirmed over several cold cranks.",
+      "condition": "all-faults-repaired"
+    },
+    {
+      "id": "out_comeback",
+      "type": "outcome",
+      "prompt": "The truck comes back — a fault you never tested for was still in the circuit.",
+      "condition": "faults-remain"
+    },
+    {
+      "id": "out_starter_wrong",
+      "type": "outcome",
+      "prompt": "New starter, same slow crank — the resistance was never in the starter. Parts and hours burned, and the truck's still broken.",
+      "condition": "wrong-system"
+    },
+    {
+      "id": "out_early_release",
+      "type": "outcome",
+      "prompt": "You swapped the battery and released it. The crank's still slow — the resistance in the cables/grounds is still there."
+    }
+  ],
+  "scoringRules": {
+    "decisionNodeWeight": 5,
+    "pathEfficiencyWeight": 2,
+    "repairSelectionWeight": 3,
+    "timeBudgetMinutes": 75
+  }
+}

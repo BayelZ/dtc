@@ -1,0 +1,163 @@
+{
+  "id": "intermittent-no-start",
+  "title": "The No-Start That Starts Fine for You (tree pilot)",
+  "vehicle": { "year": 2013, "make": "Nissan", "model": "Altima", "engine": "2.5L" },
+  "complaintTemplate": "CUST STATES: every week or so it cranks but won't fire — then twenty minutes later it starts like nothing happened. Always runs by the time it's towed in. Worse when it's hot out. No warning light stays on.",
+  "faultSeeds": [
+    {
+      "id": "seed_ckp",
+      "internalNote": "Crankshaft position sensor heat-soaks and drops out when hot, recovers when cool — the textbook intermittent. Only a capture during an actual failure shows it (no sync/RPM during crank). Bench tests and bay starts pass every time. Correct fix: crank sensor. Confirming test: the captured failure event.",
+      "activeFaults": [
+        { "id": "ckp", "label": "crankshaft position sensor dropping out when heat-soaked", "revealedBy": "act_capture" }
+      ],
+      "resultOverrides": {
+        "act_capture": "The logger catches it on day two — a hot no-start after a 20-minute shutdown. During crank the RPM/sync trace flatlines: no crankshaft-position signal reaching the ECM. Fuel pressure was normal beforehand, but spark and injector pulse never got the cue. It restarted once it cooled.",
+        "act_freezeframe": "One immature history code: P0335 (crankshaft position circuit). No freeze frame of a live fault."
+      }
+    },
+    {
+      "id": "seed_fuel_pump",
+      "internalNote": "Fuel pump intermittently fails to prime — no pressure during the event, but sync and spark are fine. Passes every bay start. Correct fix: fuel pump (or its relay/connector). Confirming test: the captured event showing 0 fuel pressure with sync/spark present.",
+      "activeFaults": [
+        { "id": "fuel_pump", "label": "fuel pump intermittently not priming (no pressure during the event)", "revealedBy": "act_capture" }
+      ],
+      "resultOverrides": {
+        "act_capture": "The logger catches a no-start: during crank the RPM/sync is solid and spark is firing, but fuel pressure sits at 0 and the pump made no priming buzz at key-on. Next start, pressure was back.",
+        "act_freezeframe": "No stored codes — an intermittent pump dropout doesn't set one on this platform."
+      }
+    },
+    {
+      "id": "seed_immobilizer",
+      "internalNote": "Intermittent immobilizer/anti-theft fault — the ECM isn't authorized to fuel during the event (no injector pulse, security light active), while sync/spark/fuel are all fine. The fix is a relearn / key or antenna-ring repair, NOT an engine part. Correct fix: immobilizer relearn. Confirming test: the captured event showing security active + no injector pulse.",
+      "activeFaults": [
+        { "id": "immobilizer", "label": "intermittent immobilizer fault — ECM not authorized to fuel", "revealedBy": "act_capture" }
+      ],
+      "resultOverrides": {
+        "act_capture": "The logger catches a no-start: sync present, spark present, fuel pressure normal — but zero injector pulse, and the security indicator was flashing through the event. The ECM isn't being authorized to fuel.",
+        "act_freezeframe": "No powertrain codes. An anti-theft / immobilizer event is logged, with no useful detail."
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "id": "intake",
+      "type": "intake",
+      "prompt": "It cranks-but-won't-fire once a week, then behaves for twenty minutes later — and it always runs by the time it reaches you. Where do you start?",
+      "options": [
+        { "label": "It won't act up here — set it up to capture the failure at the customer's (logger + fuel-pressure gauge)", "targetNodeId": "act_capture", "scoreWeight": 3 },
+        { "label": "Pull the codes and any freeze frame first", "targetNodeId": "act_freezeframe", "scoreWeight": 1 },
+        { "label": "Try to reproduce it in the bay", "targetNodeId": "act_bay_start", "scoreWeight": 0 },
+        { "label": "Crank sensors always go on these — just replace it", "targetNodeId": "repair_ckp", "scoreWeight": -5 }
+      ]
+    },
+    {
+      "id": "bay",
+      "type": "action",
+      "prompt": "Back to it. What's your next move?",
+      "timeCost": 0,
+      "options": [
+        { "label": "Set up a capture rig to catch the next failure event (logger, fuel-pressure gauge)", "targetNodeId": "act_capture", "scoreWeight": 3 },
+        { "label": "Pull codes / freeze frame", "targetNodeId": "act_freezeframe", "scoreWeight": 1 },
+        { "label": "Try to start it / reproduce it in the bay", "targetNodeId": "act_bay_start", "scoreWeight": -1 },
+        { "label": "Wiggle-test and heat-gun the usual suspects to provoke it", "targetNodeId": "act_wiggle", "scoreWeight": -1 },
+        { "label": "Replace the crank sensor on spec", "targetNodeId": "repair_ckp", "scoreWeight": -5 },
+        { "label": "I'm ready to commit to a root cause", "targetNodeId": "decision", "scoreWeight": 0 }
+      ]
+    },
+    {
+      "id": "act_capture",
+      "type": "action",
+      "prompt": "You send it home wired to catch itself — a logging scan tool on sync/injector/spark plus a fuel-pressure transducer taped where the customer can't miss it — with instructions to leave it keyed during the next no-start.",
+      "timeCost": 30,
+      "options": [
+        { "label": "Data's in — commit to what the capture shows", "targetNodeId": "decision", "scoreWeight": 2 },
+        { "label": "Confirm against codes / freeze frame first", "targetNodeId": "act_freezeframe", "scoreWeight": 1 }
+      ]
+    },
+    {
+      "id": "act_freezeframe",
+      "type": "action",
+      "prompt": "You pull stored codes and any freeze-frame data.",
+      "timeCost": 5,
+      "options": [
+        { "label": "Note it and set up to capture the live event", "targetNodeId": "act_capture", "scoreWeight": 2 },
+        { "label": "Commit on what's stored", "targetNodeId": "decision", "scoreWeight": 0 }
+      ]
+    },
+    {
+      "id": "act_bay_start",
+      "type": "action",
+      "prompt": "You try to start it — warm, cold, after a soak. It fires right up every time. It behaves for you exactly like it behaves for no one else; you won't catch this on your schedule in the bay.",
+      "timeCost": 10,
+      "options": [
+        { "label": "Right — I can't chase what won't act up here. Back to the plan.", "targetNodeId": "bay", "scoreWeight": 0 },
+        { "label": "Starts fine — no fault found, return it to the customer", "targetNodeId": "out_comeback", "scoreWeight": -4 }
+      ]
+    },
+    {
+      "id": "act_wiggle",
+      "type": "action",
+      "prompt": "You wiggle harnesses, tap the crank sensor, and heat-gun the usual suspects. Nothing drops it on command — the fault refuses to perform for you.",
+      "timeCost": 10,
+      "nextNodeId": "bay",
+      "continueLabel": "It won't be provoked. Back to the plan."
+    },
+    {
+      "id": "decision",
+      "type": "decision",
+      "prompt": "Commit to a specific root cause — based on what a real failure event actually showed, not on what usually goes bad.",
+      "options": [
+        { "label": "It's the crankshaft position sensor — replace it", "targetNodeId": "repair_ckp", "commitsTo": "ckp", "scoreWeight": 6 },
+        { "label": "It's the fuel pump — replace it (check relay and connector)", "targetNodeId": "repair_fuelpump", "commitsTo": "fuel_pump", "scoreWeight": 6 },
+        { "label": "It's an immobilizer fault — key/antenna repair and relearn", "targetNodeId": "repair_immobilizer", "commitsTo": "immobilizer", "scoreWeight": 6 },
+        { "label": "Crank sensors always go on these — throw one at it", "targetNodeId": "repair_ckp", "scoreWeight": -4 },
+        { "label": "It always starts here — no fault found, return it", "targetNodeId": "out_comeback", "scoreWeight": -4 }
+      ]
+    },
+    {
+      "id": "repair_ckp",
+      "type": "repair",
+      "prompt": "You replace the crankshaft position sensor, then heat-soak it and confirm the sync signal holds through a hot restart.",
+      "timeCost": 20,
+      "repairs": ["ckp"],
+      "nextNodeId": "#resolve",
+      "continueLabel": "Heat-soak, confirm, and release"
+    },
+    {
+      "id": "repair_fuelpump",
+      "type": "repair",
+      "prompt": "You replace the fuel pump (and check its relay and connector), then confirm prime and pressure across repeated hot key-ons.",
+      "timeCost": 30,
+      "repairs": ["fuel_pump"],
+      "nextNodeId": "#resolve",
+      "continueLabel": "Confirm prime and pressure, then release"
+    },
+    {
+      "id": "repair_immobilizer",
+      "type": "repair",
+      "prompt": "You address the immobilizer fault — key/antenna-ring repair and a relearn — then confirm injector pulse returns and security clears across restarts.",
+      "timeCost": 20,
+      "repairs": ["immobilizer"],
+      "nextNodeId": "#resolve",
+      "continueLabel": "Confirm authorization holds, then release"
+    },
+    {
+      "id": "out_good",
+      "type": "outcome",
+      "condition": "all-faults-repaired",
+      "prompt": "You fixed what the failure event actually showed — confirmed across the exact conditions it used to die in. It stays started, and you can prove why."
+    },
+    {
+      "id": "out_comeback",
+      "type": "outcome",
+      "condition": "faults-remain",
+      "prompt": "It's towed back in a week — cranks, won't fire, then starts twenty minutes later. Nothing was ever captured, so nothing was actually diagnosed."
+    }
+  ],
+  "scoringRules": {
+    "decisionNodeWeight": 5,
+    "pathEfficiencyWeight": 2,
+    "repairSelectionWeight": 3,
+    "timeBudgetMinutes": 60
+  }
+}
