@@ -2,16 +2,22 @@ import React, { useState } from "react";
 import { ChallengeCard } from "@/components/challenge/ChallengeCard";
 import { ChallengeArena } from "@/components/challenge/ChallengeArena";
 import { useChallenges } from "@/hooks/useChallenges";
+import { useTreeCases } from "@/hooks/useTreeCases";
+import { TreeCaseRail } from "@/components/tree/TreeCaseRail";
+import { TreeCaseRunner } from "@/components/tree/TreeCaseRunner";
 import { CHALLENGE_TYPES, CHALLENGE_TYPE_LABELS } from "@/lib/constants";
 import type { Challenge, Profile } from "@/lib/supabase/types";
 
 export const ChallengesPage:React.FC<{profile:Partial<Profile>|null;onXP:(xp:number)=>void}> = ({onXP}) => {
   const { challenges, loading } = useChallenges();
+  const { cases:treeCases } = useTreeCases();
   const [active,setActive]=useState<Challenge|null>(null);
+  const [activeCase,setActiveCase]=useState<string|null>(null);
   const [filterSpec,setFilterSpec]=useState("All");
   const [filterType,setFilterType]=useState("All");
   const [completed,setCompleted]=useState<Set<string>>(new Set());
 
+  if (activeCase) return <TreeCaseRunner slug={activeCase} onBack={()=>setActiveCase(null)} onXP={onXP} />;
   if (active) return <ChallengeArena challenge={active} onBack={()=>setActive(null)} onComplete={xp=>{ onXP(xp); setCompleted(s=>new Set(s).add(active.id)); }} />;
 
   const filtered=challenges.filter(c=>(filterSpec==="All"||c.specialty===filterSpec)&&(filterType==="All"||c.type===filterType));
@@ -22,6 +28,8 @@ export const ChallengesPage:React.FC<{profile:Partial<Profile>|null;onXP:(xp:num
   return (
     <div>
       <h1 style={{fontSize:22,fontWeight:500,margin:"0 0 1rem"}}>Challenge arena</h1>
+      {/* Featured above the filters: the filters below apply to the multiple-choice bank. */}
+      <TreeCaseRail cases={treeCases} onOpen={setActiveCase} />
       <div style={{display:"flex",gap:8,marginBottom:"1.25rem",flexWrap:"wrap"}}>
         {["All","Automotive","Diesel"].map(s=><FB key={s} val={s} label={s} current={filterSpec} set={setFilterSpec} />)}
         <div style={{width:1,background:"var(--border)",margin:"0 4px"}} />

@@ -1,0 +1,207 @@
+{
+  "id": "smart-charge-bms",
+  "title": "The Alternator That Wasn't Broken (tree pilot)",
+  "vehicle": { "year": 2018, "make": "Ford", "model": "F-150", "engine": "5.0L V8" },
+  "complaintTemplate": "CUST STATES: 'charging system STILL not right.' Two alternators in 6 months for low charging voltage — he watches a plug-in voltmeter read 12.9V while driving, 14.6V other times. Batteries keep dying young. Says it all started right after a parts-store battery got put in.",
+  "faultSeeds": [
+    {
+      "id": "seed_unregistered",
+      "internalNote": "Nothing electrical is broken. The parts-store battery was never registered to the BMS, so the ECM's charge strategy still runs the OLD battery's aged profile and chronically undercharges the new one (12.9V commanded) — reads as 'low charging' and kills batteries young. Commanded==actual, so both replaced alternators were innocent. Correct fix: register the battery, verify commanded climbs, replace NOTHING. Confirming test: the registration/battery-profile check.",
+      "activeFaults": [
+        { "id": "bms_unregistered", "label": "new battery never registered to the BMS (charge strategy running the old battery's profile)", "revealedBy": "act_check_registration" }
+      ],
+      "resultOverrides": {
+        "act_scan_pids": "Commanded 12.9V, actual 12.9V — output is matching command exactly; the alternator is delivering what the ECM asks for. BMS-reported state of charge: 55%.",
+        "act_check_registration": "Battery registration: never performed. The stored profile still carries the age and capacity of the unit that was replaced months ago.",
+        "act_inspect_sensor": "The battery current sensor, its ground eyelet, and its connector are clean; voltage drop across its ground is 0.02V under load — in spec.",
+        "act_battery_test": "Date code: about 2 months old. Load-tests strong at 95%, plates healthy — a genuinely fresh battery. The BMS is reporting it at 55% state of charge."
+      }
+    },
+    {
+      "id": "seed_sensor",
+      "internalNote": "The battery current sensor (IBS) clamped on the negative battery cable has a corroded ground/connector, so it feeds the strategy bad current/SOC data — the charge command wanders and undercharges. A registration alone will NOT hold, because the sensor keeps lying. Correct fix: repair the sensor ground/connection (then register). Confirming test: inspect / voltage-drop the sensor.",
+      "activeFaults": [
+        { "id": "bms_sensor", "label": "corroded battery current sensor ground on the negative cable", "revealedBy": "act_inspect_sensor" }
+      ],
+      "resultOverrides": {
+        "act_scan_pids": "Commanded voltage swings 11.9–15.1V with no pattern; actual tracks it. BMS state-of-charge reading jumps around erratically.",
+        "act_check_registration": "Registration shows performed and current. The state-of-charge history is present but noisy.",
+        "act_inspect_sensor": "The battery current sensor's ground eyelet is green and corroded; voltage drop across its ground reads 0.6V under load, spec near zero. The connector pins are dark.",
+        "act_battery_test": "Recent date code, load-tests okay. But the live state-of-charge and current values on the scan tool jump around impossibly."
+      }
+    },
+    {
+      "id": "seed_bad_alt",
+      "internalNote": "This time the alternator IS bad — commanded 14.6V but actual only 13.0V at the B+ post under load. The strategy is asking correctly; the hardware underdelivers. The ONLY way to know is comparing commanded vs actual — the dash voltmeter can't tell this from the other two seeds. A blind swap physically fixes it but is a lucky, undiagnosed fix. Confirming test: the commanded-vs-actual scan.",
+      "activeFaults": [
+        { "id": "alternator", "label": "alternator underdelivering (commanded 14.6V, actual 13.0V under load)", "revealedBy": "act_scan_pids" }
+      ],
+      "resultOverrides": {
+        "act_scan_pids": "Commanded 14.6V, but actual only 13.0V at the B+ post under load. Output is falling well short of command.",
+        "act_check_registration": "Registration current, profile sensible.",
+        "act_inspect_sensor": "The battery current sensor, ground, and connector all check out — voltage drop 0.02V, readings steady.",
+        "act_battery_test": "A few months old and a bit worn from months of undercharge, but still serviceable."
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "id": "intake",
+      "type": "intake",
+      "prompt": "Two alternators in six months, batteries dying young, a customer glued to a plug-in voltmeter — and it all started after a parts-store battery. Where do you start?",
+      "options": [
+        { "label": "Scan the charging system — commanded vs. actual voltage — before touching a part", "targetNodeId": "act_scan_pids", "scoreWeight": 3 },
+        { "label": "Start at the battery current sensor clamped on the negative battery cable", "targetNodeId": "act_inspect_sensor", "scoreWeight": 1 },
+        { "label": "Pull it in and run a proper workup", "targetNodeId": "bay", "scoreWeight": 1 },
+        { "label": "The meter reads 12.9V — that's low. Put a third alternator in", "targetNodeId": "repair_alt", "scoreWeight": -5 }
+      ]
+    },
+    {
+      "id": "bay",
+      "type": "action",
+      "prompt": "Back at the truck. What's your next move?",
+      "timeCost": 0,
+      "options": [
+        { "label": "Scan commanded vs. actual charge voltage + BMS state-of-charge", "targetNodeId": "act_scan_pids", "scoreWeight": 3 },
+        { "label": "Check whether the new battery was ever registered to the BMS", "targetNodeId": "act_check_registration", "scoreWeight": 2 },
+        { "label": "Inspect and voltage-drop the battery current sensor (on the negative cable) and its ground", "targetNodeId": "act_inspect_sensor", "scoreWeight": 2 },
+        { "label": "Assess the battery — load test, date code, and wear", "targetNodeId": "act_battery_test", "scoreWeight": 1 },
+        { "label": "Watch the customer's dash voltmeter", "targetNodeId": "act_dash_meter", "scoreWeight": -2 },
+        { "label": "Unplug the BMS to force steady charging", "targetNodeId": "act_unplug_bms", "scoreWeight": -3 },
+        { "label": "Put in a third alternator", "targetNodeId": "repair_alt", "scoreWeight": -5 },
+        { "label": "I'm ready to commit to a root cause", "targetNodeId": "decision", "scoreWeight": 0 }
+      ]
+    },
+    {
+      "id": "act_scan_pids",
+      "type": "action",
+      "prompt": "You put the scan tool on the charging PIDs — commanded charge voltage, actual charge voltage, and BMS state of charge — and drive it.",
+      "timeCost": 15,
+      "options": [
+        { "label": "Log it — pull the BMS registration / battery profile too", "targetNodeId": "act_check_registration", "scoreWeight": 2 },
+        { "label": "Log it and inspect the battery current sensor", "targetNodeId": "act_inspect_sensor", "scoreWeight": 1 },
+        { "label": "I've got the discriminating reading — commit", "targetNodeId": "decision", "scoreWeight": 1 }
+      ]
+    },
+    {
+      "id": "act_check_registration",
+      "type": "action",
+      "prompt": "You pull the BMS battery-registration status and the stored battery profile.",
+      "timeCost": 10,
+      "options": [
+        { "label": "Log it and commit to a root cause", "targetNodeId": "decision", "scoreWeight": 2 },
+        { "label": "Cross-check the sensor and battery first", "targetNodeId": "bay", "scoreWeight": 1 }
+      ]
+    },
+    {
+      "id": "act_inspect_sensor",
+      "type": "action",
+      "prompt": "You inspect and voltage-drop the battery current sensor clamped on the negative battery cable — its ground eyelet, pigtail, and connector.",
+      "timeCost": 12,
+      "options": [
+        { "label": "Log it and commit to a root cause", "targetNodeId": "decision", "scoreWeight": 2 },
+        { "label": "Cross-check the scan data first", "targetNodeId": "bay", "scoreWeight": 1 }
+      ]
+    },
+    {
+      "id": "act_battery_test",
+      "type": "action",
+      "prompt": "You assess the installed battery — load test, date code, and state of wear.",
+      "timeCost": 10,
+      "options": [
+        { "label": "Log it and keep testing the system", "targetNodeId": "bay", "scoreWeight": 1 },
+        { "label": "Battery's the story — replace it and release", "targetNodeId": "repair_battery", "scoreWeight": -2 }
+      ]
+    },
+    {
+      "id": "act_dash_meter",
+      "type": "action",
+      "prompt": "You watch the customer's plug-in voltmeter: 12.9V cruising, 14.6V at other times — exactly what he reported, and exactly what variable charging is supposed to do. The meter reads moments; it can't tell strategy from fault.",
+      "timeCost": 5,
+      "nextNodeId": "bay",
+      "continueLabel": "Right — the meter can't diagnose this. Back to the truck."
+    },
+    {
+      "id": "act_unplug_bms",
+      "type": "action",
+      "prompt": "You unplug the BMS. The alternator drops into a steady ~13.5V fallback and the swings stop — but you've set a charging-system code and crippled the strategy. It hides the question instead of answering it.",
+      "timeCost": 10,
+      "options": [
+        { "label": "Reconnect it — that's not a diagnosis. Back to the truck.", "targetNodeId": "bay", "scoreWeight": 0 },
+        { "label": "Leave it defeated and call it fixed", "targetNodeId": "out_masked", "scoreWeight": -4 }
+      ]
+    },
+    {
+      "id": "decision",
+      "type": "decision",
+      "prompt": "Commit to a specific root cause. What gets done — and what, if anything, gets replaced?",
+      "options": [
+        { "label": "Register the new battery to the BMS and clear the stale profile — replace nothing", "targetNodeId": "repair_register", "commitsTo": "bms_unregistered", "scoreWeight": 6 },
+        { "label": "It's the battery current sensor — repair its ground/connection on the negative cable, then register", "targetNodeId": "repair_sensor", "commitsTo": "bms_sensor", "scoreWeight": 6 },
+        { "label": "It's the alternator — replace it", "targetNodeId": "repair_alt", "commitsTo": "alternator", "scoreWeight": 6 },
+        { "label": "Batteries keep dying — just put another battery in and send it", "targetNodeId": "repair_battery", "scoreWeight": -3 },
+        { "label": "Leave the BMS defeated so it charges steady", "targetNodeId": "out_masked", "scoreWeight": -4 }
+      ]
+    },
+    {
+      "id": "repair_register",
+      "type": "repair",
+      "prompt": "You run the battery registration / relearn so the strategy drops the stale profile, then drive it and re-check commanded voltage against actual.",
+      "timeCost": 15,
+      "repairs": ["bms_unregistered"],
+      "nextNodeId": "#resolve",
+      "continueLabel": "Re-check commanded vs. actual and release"
+    },
+    {
+      "id": "repair_sensor",
+      "type": "repair",
+      "prompt": "You repair the battery current sensor's ground eyelet and connector on the negative cable, register the battery, then re-check commanded vs. actual.",
+      "timeCost": 30,
+      "repairs": ["bms_sensor"],
+      "nextNodeId": "#resolve",
+      "continueLabel": "Re-check and release"
+    },
+    {
+      "id": "repair_alt",
+      "type": "repair",
+      "prompt": "You install a replacement alternator and re-check commanded vs. actual at the B+ post.",
+      "timeCost": 60,
+      "repairs": ["alternator"],
+      "nextNodeId": "#resolve",
+      "continueLabel": "Release the truck"
+    },
+    {
+      "id": "repair_battery",
+      "type": "repair",
+      "prompt": "You put another battery in and send it.",
+      "timeCost": 25,
+      "repairs": [],
+      "nextNodeId": "#resolve",
+      "continueLabel": "Release the truck"
+    },
+    {
+      "id": "out_good",
+      "type": "outcome",
+      "condition": "all-faults-repaired",
+      "prompt": "Commanded and actual track on a known-good, registered battery, state of charge re-baselines on the drive, and the swings are normal strategy again. Fixed — and you can show the customer why on the scan tool."
+    },
+    {
+      "id": "out_comeback",
+      "type": "outcome",
+      "condition": "faults-remain",
+      "prompt": "It's back on the next visit. The real fault was never addressed."
+    },
+    {
+      "id": "out_masked",
+      "type": "outcome",
+      "condition": "wrong-system",
+      "prompt": "The BMS is unplugged, so it charges dumb and steady — and there's a charging-system code on the dash now. You didn't fix it, you blindfolded it. It comes back worse, and the next tech inherits your code."
+    }
+  ],
+  "scoringRules": {
+    "decisionNodeWeight": 5,
+    "pathEfficiencyWeight": 2,
+    "repairSelectionWeight": 3,
+    "timeBudgetMinutes": 80
+  }
+}

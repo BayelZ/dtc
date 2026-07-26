@@ -25,6 +25,17 @@ export const SubmitAnswerSchema = z.object({
   time_taken_s: z.number().int().min(1).max(QUESTION_TIME_SECONDS).optional().default(QUESTION_TIME_SECONDS),
 });
 export const FinishAttemptSchema = z.object({ attempt_id: uuid });
+
+// Diagnostic-tree runs. The client only ever names an option INDEX on the node it is currently
+// on — it can't submit a score, a path, or a fault id. The server validates every transition
+// against the tree and replays the whole path to score it.
+export const StartTreeSchema = z.object({ slug: z.string().trim().min(1).max(80).regex(/^[a-z0-9-]+$/,"Invalid slug") });
+export const TreeStepSchema = z.object({
+  attempt_id: uuid,
+  from_node_id: z.string().trim().min(1).max(80),
+  option: z.number().int().min(-1).max(15), // -1 = follow the node's nextNodeId link
+});
+export const FinishTreeSchema = z.object({ attempt_id: uuid });
 export const QuestionFlagSchema = z.object({
   question_id: uuid,
   reason: z.enum(FLAG_REASONS),

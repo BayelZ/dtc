@@ -1,0 +1,273 @@
+{
+  "id": "bus-went-quiet",
+  "title": "The Bus That Went Quiet",
+  "vehicle": { "year": 2017, "make": "Ram", "model": "1500", "engine": "5.7L" },
+  "complaintTemplate": "CUST STATES: dash lit up with every warning light at once, speedo and gauges dropped out, and now it barely runs right. Started after it sat out in a storm. Another shop scanned it, said 'the module is bad' and quoted a module plus programming.",
+  "faultSeeds": [
+    {
+      "id": "seed_shorted_module",
+      "internalNote": "A module killing the whole bus. The body control module has failed internally and is loading the bus down — every other module goes no-comm because of one bad node. Resistance reads low, but only systematic disconnection proves WHICH node. Correct fix: the failed BCM. Confirming test: act_disconnect_modules.",
+      "activeFaults": [
+        { "id": "shorted_module", "label": "internally failed body control module loading down the bus", "revealedBy": "act_disconnect_modules" }
+      ],
+      "resultOverrides": {
+        "act_pull_codes": "Nearly every module that still answers has stored lost-communication codes pointing at each other. The BCM answers only intermittently.",
+        "act_measure_resistance": "Across CAN High and Low, key off, you read well under 60 ohms — something on the bus is loading it, though the reading can't tell you which node.",
+        "act_scope_bus": "The waveform is squashed and irregular, with the differential collapsing intermittently rather than sitting clean.",
+        "act_disconnect_modules": "You unplug modules one at a time. The moment the body control module comes off the bus, the waveform snaps clean and every other module reports in. Plug it back in and the bus collapses again.",
+        "act_visual_harness": "You follow the accessible CAN runs and find no chafe points, no damaged insulation, nothing rubbed through.",
+        "act_check_power_grounds": "Power and ground at each affected module check good under load."
+      }
+    },
+    {
+      "id": "seed_chafed_wire",
+      "internalNote": "The harness, not the module. The CAN pair is rubbed through against a bracket and shorted to chassis ground. Resistance is low and the scope shows the lines dragged down, but the fix is finding the rub point — you cannot fix this by disconnecting modules. Correct fix: repair the harness at the chafe. Confirming test: act_visual_harness.",
+      "activeFaults": [
+        { "id": "chafed_wire", "label": "CAN pair chafed through to chassis ground at a harness rub point", "revealedBy": "act_visual_harness" }
+      ],
+      "resultOverrides": {
+        "act_pull_codes": "A spread of lost-communication codes across every module that answers; two modules won't respond at all.",
+        "act_measure_resistance": "Resistance across the bus reads well under 60 ohms — the lines are being loaded somewhere, though this won't tell you where.",
+        "act_scope_bus": "Both CAN High and Low are dragged toward ground with almost no differential left between them. The lines are shorted, not merely noisy.",
+        "act_disconnect_modules": "You unplug modules one at a time and the bus never recovers — whatever is loading it stays put with the harness.",
+        "act_visual_harness": "Following the harness down behind the engine you find the CAN pair rubbed through where it crosses a bracket, copper bright and bearing against bare metal.",
+        "act_check_power_grounds": "Module power and grounds all check good."
+      }
+    },
+    {
+      "id": "seed_terminator",
+      "internalNote": "The one that fools everyone. A terminating resistor has failed open, leaving the bus half-terminated: resistance reads about 120 instead of 60, and the waveform rings with reflections. No module is bad and nothing is shorted. Correct fix: the module carrying the failed terminating resistor. Confirming test: act_measure_resistance.",
+      "activeFaults": [
+        { "id": "terminator", "label": "failed terminating resistor leaving the bus half-terminated", "revealedBy": "act_measure_resistance" }
+      ],
+      "resultOverrides": {
+        "act_pull_codes": "Several modules store intermittent lost-communication codes, and the scan tool drops its connection to two of them at random.",
+        "act_measure_resistance": "Across CAN High and Low, key off, you read about 120 ohms where the bus should read close to 60.",
+        "act_scope_bus": "The waveform is present and roughly mirrored, but the edges ring and overshoot badly — reflections running back down an under-terminated bus.",
+        "act_disconnect_modules": "You unplug modules one at a time and communication never fully returns; nothing you remove makes the bus healthy.",
+        "act_visual_harness": "The accessible harness runs are intact — no chafing, no damage, nothing rubbed through.",
+        "act_check_power_grounds": "Power and grounds at the modules check good."
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "id": "intake",
+      "type": "intake",
+      "prompt": "Half the dash is lit, several modules are no-comm, and there's a quote on the counter for a module plus programming. Where do you start?",
+      "options": [
+        { "label": "Scan every module and map which ones can still be reached", "targetNodeId": "q_ucode_meaning", "scoreWeight": 3 },
+        { "label": "Measure bus resistance at the DLC with the key off", "targetNodeId": "q_can_resistance", "scoreWeight": 3 },
+        { "label": "Pull it in and start a full network workup", "targetNodeId": "bay", "scoreWeight": 1 },
+        { "label": "A module has the code — replace and program that module", "targetNodeId": "repair_blind", "scoreWeight": -5 }
+      ]
+    },
+    {
+      "id": "bay",
+      "type": "action",
+      "prompt": "Truck's in the bay, key off, DLC accessible. What's your move?",
+      "timeCost": 0,
+      "options": [
+        { "label": "Scan all modules and map who can still talk", "targetNodeId": "q_ucode_meaning", "scoreWeight": 3 },
+        { "label": "Measure bus resistance across CAN High and Low", "targetNodeId": "q_can_resistance", "scoreWeight": 3 },
+        { "label": "Scope the CAN waveform and look at signal quality", "targetNodeId": "q_scope_normal", "scoreWeight": 3 },
+        { "label": "Disconnect modules one at a time and watch the bus", "targetNodeId": "act_disconnect_modules", "scoreWeight": 2 },
+        { "label": "Inspect the harness at known rub points for chafing", "targetNodeId": "act_visual_harness", "scoreWeight": 2 },
+        { "label": "Check power and grounds at the affected modules", "targetNodeId": "act_check_power_grounds", "scoreWeight": 1 },
+        { "label": "I'm ready to commit to a root cause", "targetNodeId": "decision", "scoreWeight": 0 }
+      ]
+    },
+    {
+      "id": "q_ucode_meaning",
+      "type": "quiz",
+      "prompt": "Three separate modules each store U0100, 'Lost Communication with ECM.' The most useful reading of that is —",
+      "explanation": "A lost-communication code says who stopped hearing whom, not who is broken. Several modules all losing the same one usually means the bus itself — or that module's access to it — not that every module storing a code has failed.",
+      "options": [
+        { "label": "they all stopped hearing the ECM — suspect the bus itself", "targetNodeId": "act_pull_codes", "scoreWeight": 0, "correct": true },
+        { "label": "all three of those modules have failed and need replacing", "targetNodeId": "act_pull_codes", "scoreWeight": 0 },
+        { "label": "the ECM has failed and needs replacement and programming", "targetNodeId": "act_pull_codes", "scoreWeight": 0 },
+        { "label": "each module needs reprogramming to restore communication", "targetNodeId": "act_pull_codes", "scoreWeight": 0 }
+      ]
+    },
+    {
+      "id": "act_pull_codes",
+      "type": "action",
+      "prompt": "You run a full-system scan, noting which modules answer, which don't, and what each one stores.",
+      "timeCost": 5,
+      "options": [
+        { "label": "Log it and measure bus resistance", "targetNodeId": "q_can_resistance", "scoreWeight": 3 },
+        { "label": "Log it and scope the bus waveform", "targetNodeId": "q_scope_normal", "scoreWeight": 3 },
+        { "label": "Log it and commit", "targetNodeId": "decision", "scoreWeight": 0 }
+      ]
+    },
+    {
+      "id": "q_can_resistance",
+      "type": "quiz",
+      "prompt": "Key off, measuring across the CAN High and CAN Low pins at the DLC, a healthy high-speed bus reads about —",
+      "explanation": "Two 120-ohm terminating resistors sit in parallel across the bus, so a healthy bus measures near 60. Roughly 120 means a terminator or its branch is missing; well under 60 means something is loading or shorting the lines.",
+      "options": [
+        { "label": "120 ohms", "targetNodeId": "act_measure_resistance", "scoreWeight": 0 },
+        { "label": "60 ohms", "targetNodeId": "act_measure_resistance", "scoreWeight": 0, "correct": true },
+        { "label": "0 ohms", "targetNodeId": "act_measure_resistance", "scoreWeight": 0 },
+        { "label": "open circuit", "targetNodeId": "act_measure_resistance", "scoreWeight": 0 }
+      ]
+    },
+    {
+      "id": "act_measure_resistance",
+      "type": "action",
+      "prompt": "Key off, you put the meter across the CAN High and CAN Low pins at the diagnostic connector and read the bus.",
+      "timeCost": 8,
+      "options": [
+        { "label": "Log it and scope the waveform", "targetNodeId": "q_scope_normal", "scoreWeight": 3 },
+        { "label": "Log it and start disconnecting modules", "targetNodeId": "act_disconnect_modules", "scoreWeight": 2 },
+        { "label": "Log it and inspect the harness", "targetNodeId": "act_visual_harness", "scoreWeight": 2 },
+        { "label": "Log it and commit", "targetNodeId": "decision", "scoreWeight": 1 }
+      ]
+    },
+    {
+      "id": "q_scope_normal",
+      "type": "quiz",
+      "prompt": "On a healthy high-speed CAN bus, a scope shows CAN High and CAN Low —",
+      "explanation": "High-speed CAN is differential: High rises to roughly 3.5V while Low drops to roughly 1.5V, mirrored around a 2.5V rest. Losing that mirrored differential is the signature of a shorted or dragged-down bus.",
+      "options": [
+        { "label": "both sitting flat at 5 volts until a module transmits", "targetNodeId": "act_scope_bus", "scoreWeight": 0 },
+        { "label": "alternating, with only one line active at any time", "targetNodeId": "act_scope_bus", "scoreWeight": 0 },
+        { "label": "riding on top of each other at the same voltage", "targetNodeId": "act_scope_bus", "scoreWeight": 0 },
+        { "label": "mirroring each other above and below about 2.5 volts", "targetNodeId": "act_scope_bus", "scoreWeight": 0, "correct": true }
+      ]
+    },
+    {
+      "id": "act_scope_bus",
+      "type": "action",
+      "prompt": "You scope CAN High and CAN Low together at the DLC and study the waveform shape, amplitude and edges.",
+      "timeCost": 15,
+      "options": [
+        { "label": "Log it and start disconnecting modules", "targetNodeId": "act_disconnect_modules", "scoreWeight": 3 },
+        { "label": "Log it and inspect the harness for chafing", "targetNodeId": "act_visual_harness", "scoreWeight": 3 },
+        { "label": "Log it and measure bus resistance", "targetNodeId": "q_can_resistance", "scoreWeight": 2 },
+        { "label": "Log it and commit", "targetNodeId": "decision", "scoreWeight": 1 }
+      ]
+    },
+    {
+      "id": "act_disconnect_modules",
+      "type": "action",
+      "prompt": "You disconnect modules from the bus one at a time, watching the resistance and the waveform after each one to see whether the bus comes back.",
+      "timeCost": 25,
+      "options": [
+        { "label": "Log it and inspect the harness", "targetNodeId": "act_visual_harness", "scoreWeight": 2 },
+        { "label": "Log it and commit", "targetNodeId": "decision", "scoreWeight": 2 }
+      ]
+    },
+    {
+      "id": "act_visual_harness",
+      "type": "action",
+      "prompt": "You follow the CAN pair through the accessible harness runs, checking brackets, pass-throughs and rub points, wiggling as you go.",
+      "timeCost": 12,
+      "options": [
+        { "label": "Log it and start disconnecting modules", "targetNodeId": "act_disconnect_modules", "scoreWeight": 2 },
+        { "label": "Log it and commit", "targetNodeId": "decision", "scoreWeight": 2 }
+      ]
+    },
+    {
+      "id": "act_check_power_grounds",
+      "type": "action",
+      "prompt": "You check power feeds and grounds at each of the affected modules, loaded, looking for a module that simply isn't awake.",
+      "timeCost": 10,
+      "nextNodeId": "bay",
+      "continueLabel": "Log it and get back to the workup"
+    },
+    {
+      "id": "decision",
+      "type": "decision",
+      "prompt": "Commit to a specific root cause. A module plus programming is the quote you're competing with.",
+      "options": [
+        { "label": "A module has failed internally and is loading the bus — replace it", "targetNodeId": "repair_module", "commitsTo": "shorted_module", "scoreWeight": 6 },
+        { "label": "The CAN pair is chafed to ground — repair the harness there", "targetNodeId": "repair_harness", "commitsTo": "chafed_wire", "scoreWeight": 6 },
+        { "label": "The bus lost a terminating resistor — repair that termination", "targetNodeId": "repair_terminator", "commitsTo": "terminator", "scoreWeight": 6 },
+        { "label": "Replace and program the module that stored the code", "targetNodeId": "repair_blind", "scoreWeight": -4 },
+        { "label": "Clear the codes and see whether it all comes back", "targetNodeId": "repair_clear", "scoreWeight": -3 }
+      ]
+    },
+    {
+      "id": "repair_module",
+      "type": "repair",
+      "prompt": "You replace the failed body control module and program it to the vehicle.",
+      "timeCost": 0,
+      "repairs": ["shorted_module"],
+      "nextNodeId": "verify",
+      "continueLabel": "Button it up"
+    },
+    {
+      "id": "repair_harness",
+      "type": "repair",
+      "prompt": "You repair the chafed CAN pair properly, re-loom it and re-route it clear of the bracket that cut it.",
+      "timeCost": 0,
+      "repairs": ["chafed_wire"],
+      "nextNodeId": "verify",
+      "continueLabel": "Button it up"
+    },
+    {
+      "id": "repair_terminator",
+      "type": "repair",
+      "prompt": "You restore the failed bus termination and confirm the bus reads close to 60 ohms again.",
+      "timeCost": 0,
+      "repairs": ["terminator"],
+      "nextNodeId": "verify",
+      "continueLabel": "Button it up"
+    },
+    {
+      "id": "repair_blind",
+      "type": "repair",
+      "prompt": "You order the module the code named, install it and program it to the vehicle — parts and programming on the customer's ticket.",
+      "timeCost": 0,
+      "repairs": [],
+      "nextNodeId": "verify",
+      "continueLabel": "Button it up"
+    },
+    {
+      "id": "repair_clear",
+      "type": "repair",
+      "prompt": "You clear every code and hand the keys back to see whether it all comes back.",
+      "timeCost": 0,
+      "repairs": [],
+      "nextNodeId": "#resolve",
+      "continueLabel": "Hand back the keys"
+    },
+    {
+      "id": "verify",
+      "type": "action",
+      "prompt": "Before this goes back out — how do you confirm the network is actually healthy?",
+      "timeCost": 0,
+      "options": [
+        { "label": "Re-measure the bus and confirm every module reports in", "targetNodeId": "act_verify_bus", "scoreWeight": 2 },
+        { "label": "Dash looks normal with the key on — release it", "targetNodeId": "#resolve", "scoreWeight": -3 }
+      ]
+    },
+    {
+      "id": "act_verify_bus",
+      "type": "action",
+      "prompt": "You re-measure bus resistance, re-scope the waveform, and run a full-system scan confirming every module answers and stays answering through a key cycle.",
+      "timeCost": 10,
+      "nextNodeId": "#resolve",
+      "continueLabel": "Release the vehicle"
+    },
+    {
+      "id": "out_good",
+      "type": "outcome",
+      "condition": "all-faults-repaired",
+      "prompt": "The bus reads where it should, the waveform is clean, and every module answers through repeated key cycles with the dash normal. You fixed the network instead of the module that complained loudest."
+    },
+    {
+      "id": "out_comeback",
+      "type": "outcome",
+      "condition": "faults-remain",
+      "prompt": "It's back with the same lit dash and the same no-comm modules — and now there's a replaced part on the invoice that didn't need replacing."
+    }
+  ],
+  "scoringRules": {
+    "decisionNodeWeight": 5,
+    "pathEfficiencyWeight": 2,
+    "repairSelectionWeight": 3,
+    "timeBudgetMinutes": 85
+  }
+}

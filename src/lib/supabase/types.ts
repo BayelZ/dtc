@@ -61,6 +61,19 @@ export interface LeaderboardRow {
 }
 
 export interface CompleteAttemptResult { grade:Grade; tier:Tier; tier_up:boolean; xp_earned:number; new_xp:number; }
+
+// Diagnostic-tree storage. `tree` holds the full DiagChallenge document INCLUDING faultSeeds —
+// the answer key — so it is server-only, exactly like Question.correct_index. Anything sent to a
+// browser must go through sanitizeTreeForClient().
+export type TreeOutcome = "clean"|"lucky"|"comeback"|"masked";
+export interface ChallengeTree { id:string; slug:string; source_challenge_id:string|null; title:string; tree:unknown; domain:SkillDomain|null; is_published:boolean; created_at:string; updated_at:string; }
+export interface TreeAttempt {
+  id:string; user_id:string; tree_id:string; seed_id:string; steps:{from:string;option:number}[];
+  outcome:TreeOutcome|null; process_score:number|null; grade:Grade|null; xp_earned:number;
+  time_minutes:number; knowledge_correct:number; knowledge_total:number;
+  completed:boolean; created_at:string; completed_at:string|null;
+}
+export interface CompleteTreeAttemptResult { new_xp:number; tier:Tier; tier_up:boolean; outcome:TreeOutcome; grade:Grade; xp_earned:number; }
 export interface FinishAttemptResponse {
   score:number; total:number; grade:Grade; xp_earned:number; speed_bonus:number;
   new_total_xp:number; tier:Tier; tier_up:boolean; already_completed?:boolean;
@@ -102,6 +115,8 @@ export interface Database {
       challenge_domains: { Row:Flatten<ChallengeDomain>; Insert:Flatten<ChallengeDomain>; Update:Partial<ChallengeDomain>; Relationships:[] };
       comebacks: { Row:Flatten<Comeback>; Insert:Omit<Comeback,"first_missed_at"|"last_missed_at"|"cleared_at"|"cleared_count"> & Partial<Pick<Comeback,"first_missed_at"|"last_missed_at"|"cleared_at"|"cleared_count">>; Update:Partial<Comeback>; Relationships:[] };
       question_flags: { Row:Flatten<QuestionFlag>; Insert:Omit<QuestionFlag,"id"|"created_at"|"status"> & {status?:FlagStatus}; Update:Partial<QuestionFlag>; Relationships:[] };
+      challenge_trees: { Row:Flatten<ChallengeTree>; Insert:Omit<ChallengeTree,"id"|"created_at"|"updated_at">; Update:Partial<ChallengeTree>; Relationships:[] };
+      tree_attempts: { Row:Flatten<TreeAttempt>; Insert:Pick<TreeAttempt,"user_id"|"tree_id"|"seed_id"> & Partial<Omit<TreeAttempt,"id"|"created_at"|"user_id"|"tree_id"|"seed_id">>; Update:Partial<TreeAttempt>; Relationships:[] };
     };
     Views: {
       leaderboard: { Row:Flatten<LeaderboardRow>; Relationships:[] };
@@ -110,6 +125,7 @@ export interface Database {
     };
     Functions: {
       complete_attempt: { Args:{p_attempt_id:string;p_xp_earned:number;p_speed_bonus?:number;p_time_seconds?:number}; Returns:CompleteAttemptResult };
+      complete_tree_attempt: { Args:{p_attempt_id:string;p_xp_earned:number;p_outcome:string;p_process_score:number;p_grade:Grade;p_time_minutes?:number;p_knowledge_correct?:number;p_knowledge_total?:number}; Returns:CompleteTreeAttemptResult };
       record_comeback_answer: { Args:{p_user_id:string;p_question_id:string;p_selected:number}; Returns:ComebackAnswerResult };
       award_comeback_badges: { Args:{p_user_id:string}; Returns:undefined };
       xp_to_tier: { Args:{p_xp:number}; Returns:Tier };
