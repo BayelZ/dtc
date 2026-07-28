@@ -1,5 +1,7 @@
 import React, { useState, useCallback, useRef } from "react";
 import { Icon } from "@/components/ui/Icon";
+import { StickerStrip } from "@/components/gear/StickerStrip";
+import type { StickerDef } from "@/components/gear/Sticker";
 import { getInitials, tierColors } from "@/lib/utils";
 import { BETA_REGION, ROUTES } from "@/lib/constants";
 import { resizeImageToSquareWebp, blobToBase64 } from "@/lib/imageResize";
@@ -19,9 +21,12 @@ interface ProfileHeaderProps {
   isOwnProfile:boolean;
   onSaveBio:(bio:string)=>Promise<void>|void;
   onAvatarUploaded:(url:string)=>Promise<void>|void;
+  equippedGear?:string[];
+  gearArt?:StickerDef[];
+  onOpenGear?:()=>void;
 }
 
-export const ProfileHeader:React.FC<ProfileHeaderProps> = ({profile,rank,isOwnProfile,onSaveBio,onAvatarUploaded}) => {
+export const ProfileHeader:React.FC<ProfileHeaderProps> = ({profile,rank,isOwnProfile,onSaveBio,onAvatarUploaded,equippedGear,gearArt,onOpenGear}) => {
   const [editingBio,setEditingBio]=useState(false);
   const [draftBio,setDraftBio]=useState(profile.bio??"");
   const [saving,setSaving]=useState(false);
@@ -137,6 +142,11 @@ export const ProfileHeader:React.FC<ProfileHeaderProps> = ({profile,rank,isOwnPr
             </span>
           </div>
         </div>
+      </div>
+
+      {/* Decal strip — bottom of the card, below the credential data it must never cover. */}
+      <div style={{position:"relative"}}>
+        <StickerStrip slugs={equippedGear??[]} art={gearArt??[]} isOwnProfile={isOwnProfile} onCustomize={onOpenGear} />
       </div>
     </div>
   );

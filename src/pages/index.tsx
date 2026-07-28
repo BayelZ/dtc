@@ -12,7 +12,9 @@ import { ChallengesPage } from "@/views/challenges";
 import { LeaderboardPage } from "@/views/leaderboard";
 import { ProfilePage } from "@/views/profile";
 import { ShopPage } from "@/views/shop";
+import { GearPage } from "@/views/gear";
 import { DisputesPage } from "@/views/disputes";
+import { useGear } from "@/hooks/useGear";
 import type { Profile } from "@/lib/supabase/types";
 import { OPEN_BETA_INVITE_TAG } from "@/lib/constants";
 
@@ -39,6 +41,8 @@ const Home:NextPage = () => {
   const profile = dbProfile ?? localProfile;
   const viewedUserId = viewingUserId ?? user?.id;
   const isOwnProfile = !viewingUserId || viewingUserId===user?.id;
+  // Gear: unlocks are evaluated SERVER-SIDE (grant_cosmetics). XP is never spent — see 030.
+  const gear = useGear(user?.id);
   if (authLoading) return <div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--text-muted)"}}>Loading…</div>;
   if (stage==="auth") return <AuthForm inviteCode={OPEN_BETA_INVITE_TAG} onAuth={handleAuth} />;
 
@@ -48,8 +52,9 @@ const Home:NextPage = () => {
       {currentPage==="Dashboard" && <DashboardPage key={benchEpoch} profile={profile} onNavigate={handleNavigate} onOpenBench={()=>setBenchOpen(true)} />}
       {currentPage==="Challenges" && <ChallengesPage profile={profile} onXP={xp=>mutate({xp:(profile?.xp??0)+xp})} />}
       {currentPage==="Leaderboard" && <LeaderboardPage profile={profile} onViewProfile={handleViewProfile} />}
-      {currentPage==="Profile" && <ProfilePage userId={viewedUserId} isOwnProfile={isOwnProfile} onBack={!isOwnProfile ? ()=>handleNavigate("Leaderboard") : undefined} />}
+      {currentPage==="Profile" && <ProfilePage userId={viewedUserId} isOwnProfile={isOwnProfile} equippedGear={isOwnProfile?gear.equipped:undefined} gearArt={gear.items} onOpenGear={()=>handleNavigate("Gear")} onBack={!isOwnProfile ? ()=>handleNavigate("Leaderboard") : undefined} />}
       {currentPage==="Shop Portal" && <ShopPage />}
+      {currentPage==="Gear" && <GearPage items={gear.items} equipped={gear.equipped} maxEquipped={gear.maxEquipped} onToggle={gear.toggle} loading={gear.loading} saving={gear.saving} error={gear.error} />}
       {currentPage==="Disputes" && <DisputesPage />}
     </AppShell>
   );

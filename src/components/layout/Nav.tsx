@@ -4,8 +4,8 @@ import { TierBadge } from "@/components/grading/TierBadge";
 import { getInitials, formatXP } from "@/lib/utils";
 import type { Profile } from "@/lib/supabase/types";
 
-export type NavPage="Dashboard"|"Challenges"|"Leaderboard"|"Profile"|"Shop Portal"|"Disputes";
-const NAV_ITEMS:NavPage[]=["Dashboard","Challenges","Leaderboard","Profile","Shop Portal"];
+export type NavPage="Dashboard"|"Challenges"|"Leaderboard"|"Profile"|"Shop Portal"|"Gear"|"Disputes";
+const NAV_ITEMS:NavPage[]=["Dashboard","Challenges","Leaderboard","Profile","Shop Portal","Gear"];
 
 export const Nav:React.FC<{currentPage:NavPage;profile:Partial<Profile>|null;onNavigate:(p:NavPage)=>void;onLogout:()=>void}> = ({currentPage,profile,onNavigate,onLogout}) => {
   const displayName=profile?.full_name??"Tech";

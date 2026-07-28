@@ -74,6 +74,25 @@ export interface TreeAttempt {
   completed:boolean; created_at:string; completed_at:string|null;
 }
 export interface CompleteTreeAttemptResult { new_xp:number; tier:Tier; tier_up:boolean; outcome:TreeOutcome; grade:Grade; xp_earned:number; }
+
+// Gear — earned profile decals. unlock_rule is evaluated SERVER-SIDE only (grant_cosmetics);
+// a client-computed credential is worth nothing. XP is never spent: rules only read earned state.
+export type StickerKind = "oval"|"patch"|"shield"|"stamp";
+export type StickerRarity = "standard"|"earned"|"rare";
+export interface Cosmetic {
+  id:string; slug:string; name:string; requirement:string;
+  kind:StickerKind; rarity:StickerRarity; legend:string; color:string;
+  unlock_rule:unknown; sort_order:number; is_active:boolean; created_at:string;
+}
+export interface UserCosmetic { user_id:string; cosmetic_id:string; unlocked_at:string; }
+export interface ProfileLoadout { user_id:string; slot:number; cosmetic_id:string; }
+/** What the browser gets: catalog + which are unlocked + what's on the box. No rules leak. */
+export interface GearView {
+  catalog:(Omit<Cosmetic,"unlock_rule"|"is_active"|"created_at"> & {unlocked:boolean})[];
+  equipped:string[];
+  max_equipped:number;
+  newly_unlocked:{slug:string;name:string}[];
+}
 export interface FinishAttemptResponse {
   score:number; total:number; grade:Grade; xp_earned:number; speed_bonus:number;
   new_total_xp:number; tier:Tier; tier_up:boolean; already_completed?:boolean;
@@ -117,6 +136,9 @@ export interface Database {
       question_flags: { Row:Flatten<QuestionFlag>; Insert:Omit<QuestionFlag,"id"|"created_at"|"status"> & {status?:FlagStatus}; Update:Partial<QuestionFlag>; Relationships:[] };
       challenge_trees: { Row:Flatten<ChallengeTree>; Insert:Omit<ChallengeTree,"id"|"created_at"|"updated_at">; Update:Partial<ChallengeTree>; Relationships:[] };
       tree_attempts: { Row:Flatten<TreeAttempt>; Insert:Pick<TreeAttempt,"user_id"|"tree_id"|"seed_id"> & Partial<Omit<TreeAttempt,"id"|"created_at"|"user_id"|"tree_id"|"seed_id">>; Update:Partial<TreeAttempt>; Relationships:[] };
+      cosmetics: { Row:Flatten<Cosmetic>; Insert:Omit<Cosmetic,"id"|"created_at">; Update:Partial<Cosmetic>; Relationships:[] };
+      user_cosmetics: { Row:Flatten<UserCosmetic>; Insert:Omit<UserCosmetic,"unlocked_at">; Update:Partial<UserCosmetic>; Relationships:[] };
+      profile_loadout: { Row:Flatten<ProfileLoadout>; Insert:Flatten<ProfileLoadout>; Update:Partial<ProfileLoadout>; Relationships:[] };
     };
     Views: {
       leaderboard: { Row:Flatten<LeaderboardRow>; Relationships:[] };
@@ -126,6 +148,9 @@ export interface Database {
     Functions: {
       complete_attempt: { Args:{p_attempt_id:string;p_xp_earned:number;p_speed_bonus?:number;p_time_seconds?:number}; Returns:CompleteAttemptResult };
       complete_tree_attempt: { Args:{p_attempt_id:string;p_xp_earned:number;p_outcome:string;p_process_score:number;p_grade:Grade;p_time_minutes?:number;p_knowledge_correct?:number;p_knowledge_total?:number}; Returns:CompleteTreeAttemptResult };
+      grant_cosmetics: { Args:{p_user_id:string}; Returns:{slug:string;name:string}[] };
+      set_profile_loadout: { Args:{p_user_id:string;p_slugs:string[]}; Returns:{slug:string}[] };
+      grade_rank: { Args:{p_grade:Grade}; Returns:number };
       record_comeback_answer: { Args:{p_user_id:string;p_question_id:string;p_selected:number}; Returns:ComebackAnswerResult };
       award_comeback_badges: { Args:{p_user_id:string}; Returns:undefined };
       xp_to_tier: { Args:{p_xp:number}; Returns:Tier };

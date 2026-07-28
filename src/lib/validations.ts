@@ -36,6 +36,13 @@ export const TreeStepSchema = z.object({
   option: z.number().int().min(-1).max(15), // -1 = follow the node's nextNodeId link
 });
 export const FinishTreeSchema = z.object({ attempt_id: uuid });
+
+// Gear loadout. The client names decal SLUGS only — it can't send an ownership claim, a rule,
+// or a slot index; the server resolves, verifies ownership and assigns slots in order.
+export const SetLoadoutSchema = z.object({
+  slugs: z.array(z.string().trim().min(1).max(60).regex(/^[a-z0-9-]+$/,"Invalid decal"))
+    .max(4,"You can only put four decals on your box"),
+});
 export const QuestionFlagSchema = z.object({
   question_id: uuid,
   reason: z.enum(FLAG_REASONS),
