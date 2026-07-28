@@ -24,10 +24,16 @@ const GEAR_CSS = `
 }
 `;
 
+// Rarity labels are DISPLAY-ONLY — the database still stores 'standard'|'earned'|'rare'
+// (CHECK constraint in migration 030), so renaming here needs no migration.
+//
+// "Earned" was a bad label: it's an ownership word, so a LOCKED card reading "EARNED" looked
+// like "you have this" while offering no button. Every decal here is earned by definition —
+// nothing is purchasable — so rarity now describes difficulty instead of ownership.
 const RARITY: Record<StickerRarity, { label:string; color:string }> = {
-  standard: { label:"Standard", color:"var(--text-faint)" },
-  earned:   { label:"Earned",   color:"var(--info)" },
-  rare:     { label:"Rare",     color:"var(--gold)" },
+  standard: { label:"Common",  color:"var(--text-faint)" },
+  earned:   { label:"Skilled", color:"var(--info)" },
+  rare:     { label:"Rare",    color:"var(--gold)" },
 };
 
 export const GearPage:React.FC<{
@@ -67,7 +73,15 @@ export const GearPage:React.FC<{
               <Sticker sticker={s} size={78} locked={!s.unlocked} />
               <div style={{textAlign:"center"}}>
                 <div className="gear-card-name" style={{fontSize:13.5,fontWeight:600,color:s.unlocked?"var(--text)":"var(--text-muted)"}}>{s.name}</div>
-                <div style={{fontSize:9.5,letterSpacing:".14em",textTransform:"uppercase",fontWeight:700,color:r.color,marginTop:3}}>{r.label}</div>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:5,marginTop:3,flexWrap:"wrap"}}>
+                  <span style={{fontSize:9.5,letterSpacing:".14em",textTransform:"uppercase",fontWeight:700,color:s.unlocked?r.color:"var(--text-faint)"}}>{r.label}</span>
+                  {!s.unlocked && (
+                    <span style={{fontSize:9,letterSpacing:".1em",textTransform:"uppercase",fontWeight:700,
+                      color:"var(--text-faint)",border:"0.5px solid var(--border)",borderRadius:3,padding:"1px 5px"}}>
+                      🔒 Locked
+                    </span>
+                  )}
+                </div>
               </div>
 
               {s.unlocked ? (
