@@ -10,10 +10,17 @@ import { useProficiency } from "@/hooks/useProficiency";
 import { useBadges } from "@/hooks/useBadges";
 import { getSupabase } from "@/lib/supabase/client";
 import { xpToNextTier, tierColors } from "@/lib/utils";
+import type { StickerDef } from "@/components/gear/Sticker";
 
-interface ProfilePageProps { userId:string|null|undefined; isOwnProfile:boolean; onBack?:()=>void; }
+interface ProfilePageProps {
+  userId:string|null|undefined; isOwnProfile:boolean; onBack?:()=>void;
+  /** Decal slugs on this profile's box (own profile only in the prototype). */
+  equippedGear?:string[];
+  gearArt?:StickerDef[];
+  onOpenGear?:()=>void;
+}
 
-export const ProfilePage:React.FC<ProfilePageProps> = ({userId,isOwnProfile,onBack}) => {
+export const ProfilePage:React.FC<ProfilePageProps> = ({userId,isOwnProfile,onBack,equippedGear,gearArt,onOpenGear}) => {
   const { profile, mutate } = useProfile(userId);
   const { stats, loading:statsLoading } = useProficiency(profile?.id);
   const { badges, loading:badgesLoading } = useBadges(profile?.id);
@@ -52,7 +59,8 @@ export const ProfilePage:React.FC<ProfilePageProps> = ({userId,isOwnProfile,onBa
       {onBack && (
         <button onClick={onBack} style={{background:"none",border:"none",fontSize:13,color:"var(--text-muted)",cursor:"pointer",padding:"0 0 12px"}}>← Back to leaderboard</button>
       )}
-      <ProfileHeader profile={profile} rank={rank} isOwnProfile={isOwnProfile} onSaveBio={handleSaveBio} onAvatarUploaded={handleAvatarUploaded} />
+      <ProfileHeader profile={profile} rank={rank} isOwnProfile={isOwnProfile} onSaveBio={handleSaveBio} onAvatarUploaded={handleAvatarUploaded}
+        equippedGear={equippedGear} gearArt={gearArt} onOpenGear={onOpenGear} />
       <ProfileStats profile={profile} rank={rank} earnedCount={earnedCount} totalBadges={badges.length} />
 
       {comebacks && (

@@ -43,3 +43,11 @@ const TreePilot: NextPage = () => {
 };
 
 export default TreePilot;
+
+// DEV-ONLY ROUTE. This page imports tree JSON client-side (including faultSeeds — the answer
+// key) and exposes an answer-key toggle, so it must never be reachable in production. Returning
+// notFound at build time means the route 404s in a production build.
+export async function getStaticProps() {
+  if (process.env.NODE_ENV === "production") return { notFound: true as const };
+  return { props: {} };
+}
